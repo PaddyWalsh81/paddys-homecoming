@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/BebasNeue-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ft-purple: #352F63;
+  --ft-green: #8BCDA1;
+  --ft-coral: #E9847E;
+  --ft-yellow: #FCBC12;
+  --ft-navy: #343F49;
+  --ft-mid-purple: #6464AF;
+  --ft-light: #F3F3F3;
+  --ft-orange: #F7911E;
+}
+
+body {
+  font-family: 'Poppins', system-ui, sans-serif;
+  color: var(--ft-navy);
+  background: var(--ft-purple);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Bebas Neue', system-ui, sans-serif;
+}
+
+@keyframes drift {
+  0% { transform: translateX(-5%); }
+  50% { transform: translateX(5%); }
+  100% { transform: translateX(-5%); }
+}
+.cloud-drift { animation: drift 25s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(252,188,18,0.3); }
+  50% { box-shadow: 0 0 35px rgba(252,188,18,0.6); }
+}
+.glow-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-anim { animation: float-up 3s ease-in-out infinite; }
+
+@keyframes fly-in {
+  0% { transform: translateX(-120px) rotate(-8deg); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+}
+.fly-in { animation: fly-in 1s ease-out forwards; }
