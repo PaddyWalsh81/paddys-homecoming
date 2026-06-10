@@ -5,10 +5,10 @@ import { addSweepstakesSubscriber } from "@/lib/mailchimp";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { firstName, email, dob, zip, store, state, referredBy } = body;
+    const { firstName, lastName, email, dob, zip, store, state, referredBy } = body;
 
     // Validation
-    if (!firstName?.trim() || !email?.trim() || !dob || !zip?.trim() || !store?.trim()) {
+    if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !dob || !zip?.trim() || !store?.trim()) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
 
     const result = await addEntry({
       firstName: firstName.trim(),
+      lastName: lastName.trim(),
       email: email.trim().toLowerCase(),
       dob,
       zip: zip.trim(),
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
     addSweepstakesSubscriber({
       email: email.trim().toLowerCase(),
       firstName: firstName.trim(),
+      lastName: lastName.trim(),
       zip: zip.trim(),
       store: store.trim(),
       state: resolvedState,

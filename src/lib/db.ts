@@ -33,6 +33,7 @@ const redis = new Redis({
 export interface Entry {
   id: string;
   firstName: string;
+  lastName: string;
   email: string;
   dob: string;
   zip: string;
@@ -77,6 +78,7 @@ function extractState(store: string): string {
 
 export async function addEntry(data: {
   firstName: string;
+  lastName: string;
   email: string;
   dob: string;
   zip: string;
@@ -123,6 +125,7 @@ export async function addEntry(data: {
         const bonusEntry: Entry = {
           id: bonusId,
           firstName: referrer.firstName,
+          lastName: referrer.lastName,
           email: referrer.email,
           dob: referrer.dob,
           zip: referrer.zip,
@@ -161,6 +164,7 @@ export async function addUGCBonusEntry(email: string, referralCode: string): Pro
   const bonusEntry: Entry = {
     id: bonusId,
     firstName: direct.firstName,
+    lastName: direct.lastName,
     email: direct.email,
     dob: direct.dob,
     zip: direct.zip,
@@ -308,7 +312,7 @@ export async function executeDraw(): Promise<{
     `Referral bonus entries: ${entries.filter((e) => e.entryType === "referral_bonus").length}`,
     `UGC bonus entries: ${entries.filter((e) => e.entryType === "ugc_bonus").length}`,
     `Random index selected: ${winnerIndex}`,
-    `Winner: ${winner.firstName} (${winner.email})`,
+    `Winner: ${winner.firstName} ${winner.lastName} (${winner.email})`,
     `Winner entry type: ${winner.entryType}`,
     `Winner store: ${winner.store}`,
     `Method: crypto.getRandomValues (Web Crypto API)`,
@@ -321,9 +325,9 @@ export async function executeDraw(): Promise<{
 
 export async function exportCSV(): Promise<string> {
   const entries = await getAllEntries();
-  const headers = "id,firstName,email,dob,zip,store,state,referralCode,referredBy,entryType,createdAt";
+  const headers = "id,firstName,lastName,email,dob,zip,store,state,referralCode,referredBy,entryType,createdAt";
   const rows = entries.map((e) =>
-    [e.id, e.firstName, e.email, e.dob, e.zip, `"${e.store}"`, e.state || "", e.referralCode, e.referredBy || "", e.entryType, e.createdAt].join(",")
+    [e.id, e.firstName, e.lastName || "", e.email, e.dob, e.zip, `"${e.store}"`, e.state || "", e.referralCode, e.referredBy || "", e.entryType, e.createdAt].join(",")
   );
   return [headers, ...rows].join("\n");
 }

@@ -35,6 +35,7 @@ function md5(str: string): string {
 export async function addSweepstakesSubscriber(data: {
   email: string;
   firstName: string;
+  lastName: string;
   zip: string;
   store: string;
   state: string;
@@ -62,6 +63,7 @@ export async function addSweepstakesSubscriber(data: {
         status_if_new: "subscribed",
         merge_fields: {
           FNAME: data.firstName,
+          LNAME: data.lastName,
           MMERGE21: data.zip,       // Zip/Post code
           MMERGE25: data.state,     // State
           MARKET: "us",             // Market / Landing Page

@@ -95,6 +95,7 @@ export default function Home() {
 
   /* entry form state */
   const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [zip, setZip] = useState("");
   const [selectedState, setSelectedState] = useState("");
@@ -168,7 +169,7 @@ export default function Home() {
   async function submitEntry(e: React.FormEvent) {
     e.preventDefault();
     setFormError("");
-    if (!firstName.trim() || !email.trim() || !zip.trim() || !selectedState || !store) {
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !zip.trim() || !selectedState || !store) {
       setFormError("Please fill in all fields and select your state.");
       return;
     }
@@ -183,6 +184,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName: firstName.trim(),
+          lastName: lastName.trim(),
           email: email.trim().toLowerCase(),
           zip: zip.trim(),
           store,
@@ -319,17 +321,30 @@ export default function Home() {
 
           {/* Form card */}
           <form onSubmit={submitEntry} className="rounded-2xl p-6 sm:p-8 space-y-5" style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(20px)" }}>
-            {/* First name */}
-            <div>
-              <label className="block text-white/70 text-sm mb-1.5">First Name</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Your first name"
-                className="w-full h-12 px-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ "--tw-ring-color": C.green } as React.CSSProperties}
-              />
+            {/* Name fields — side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-white/70 text-sm mb-1.5">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="First name"
+                  className="w-full h-12 px-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:border-transparent"
+                  style={{ "--tw-ring-color": C.green } as React.CSSProperties}
+                />
+              </div>
+              <div>
+                <label className="block text-white/70 text-sm mb-1.5">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Last name"
+                  className="w-full h-12 px-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:border-transparent"
+                  style={{ "--tw-ring-color": C.green } as React.CSSProperties}
+                />
+              </div>
             </div>
 
             {/* Email */}
@@ -610,7 +625,7 @@ export default function Home() {
             See <a href="#rules" className="underline">Official Rules</a>. Void where prohibited.
           </p>
           <p className="text-white/30 text-xs">
-            Alternative method of entry: Handwrite your name, address, email, date of birth, and &quot;Paddy&apos;s Homecoming&quot; on a 3&times;5 card and mail to: Flying Tumbler, PO Box [TBD], [City, State ZIP].
+            Alternative method of entry: Email paddyshomecoming@flyingtumbler.com with your full name, date of birth, email, and zip code. Subject line: &quot;Paddy&apos;s Homecoming Entry.&quot;
           </p>
           <p className="text-white/20 text-xs">
             &copy; {new Date().getFullYear()} Flying Tumbler Irish Whiskey. Please drink responsibly.
