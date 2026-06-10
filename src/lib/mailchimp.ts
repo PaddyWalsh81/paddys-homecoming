@@ -66,6 +66,8 @@ export async function addSweepstakesSubscriber(data: {
           MMERGE25: data.state,     // State
           MARKET: "us",             // Market / Landing Page
           MMERGE22: "United States of America", // Country
+          REFCODE: data.referralCode, // Sweepstakes referral code
+          SSTORE: data.store,        // Sweepstakes store
         },
       }),
     });
