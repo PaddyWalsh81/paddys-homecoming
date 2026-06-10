@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = executeDraw();
+  const result = await executeDraw();
   if (!result) {
     return NextResponse.json({ error: "No entries in the draw." }, { status: 400 });
   }

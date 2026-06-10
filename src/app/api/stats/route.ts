@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   const format = request.nextUrl.searchParams.get("format");
   if (format === "csv") {
-    const csv = exportCSV();
+    const csv = await exportCSV();
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv",
@@ -29,6 +29,6 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const stats = getStats();
+  const stats = await getStats();
   return NextResponse.json(stats);
 }

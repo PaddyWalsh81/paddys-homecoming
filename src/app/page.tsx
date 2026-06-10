@@ -13,7 +13,16 @@ const C = {
   orange: "#F7911E",
 };
 
-/* ── store list (placeholder — replace with API/DB) ── */
+/* ── US states where Flying Tumbler is available ── */
+const STATES = [
+  { code: "MA", name: "Massachusetts" },
+  { code: "NH", name: "New Hampshire" },
+  { code: "DC", name: "Washington DC" },
+  { code: "NY", name: "New York" },
+  { code: "MD", name: "Maryland" },
+];
+
+/* ── store list (placeholder — replace with full account list from Patrick) ── */
 const STORES: { name: string; state: string }[] = [
   { name: "Curtis Liquors — Quincy", state: "MA" },
   { name: "Kappy's Fine Wine & Spirits — Medford", state: "MA" },
@@ -88,6 +97,7 @@ export default function Home() {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [zip, setZip] = useState("");
+  const [selectedState, setSelectedState] = useState("");
   const [store, setStore] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
   const [showStoreDropdown, setShowStoreDropdown] = useState(false);
@@ -105,14 +115,18 @@ export default function Home() {
 
   const storeRef = useRef<HTMLDivElement>(null);
 
-  /* filtered stores */
+  /* filtered stores — state-first: filter by selected state, then by search text */
   const filteredStores = useMemo(() => {
-    if (!storeSearch) return STORES;
-    const q = storeSearch.toLowerCase();
-    return STORES.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.state.toLowerCase().includes(q)
-    );
-  }, [storeSearch]);
+    let result = STORES;
+    if (selectedState) {
+      result = result.filter((s) => s.state === selectedState);
+    }
+    if (storeSearch) {
+      const q = storeSearch.toLowerCase();
+      result = result.filter((s) => s.name.toLowerCase().includes(q));
+    }
+    return result;
+  }, [selectedState, storeSearch]);
 
   /* close dropdown on outside click */
   useEffect(() => {
@@ -154,8 +168,8 @@ export default function Home() {
   async function submitEntry(e: React.FormEvent) {
     e.preventDefault();
     setFormError("");
-    if (!firstName.trim() || !email.trim() || !zip.trim() || !store) {
-      setFormError("Please fill in all fields.");
+    if (!firstName.trim() || !email.trim() || !zip.trim() || !selectedState || !store) {
+      setFormError("Please fill in all fields and select your state.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -172,6 +186,7 @@ export default function Home() {
           email: email.trim().toLowerCase(),
           zip: zip.trim(),
           store,
+          state: selectedState || "Other",
           dob: `${dobYear}-${dobMonth.padStart(2, "0")}-${dobDay.padStart(2, "0")}`,
           referredBy: new URLSearchParams(window.location.search).get("ref") || null,
         }),
@@ -345,53 +360,85 @@ export default function Home() {
               />
             </div>
 
-            {/* Store selector */}
-            <div ref={storeRef} className="relative">
-              <label className="block text-white/70 text-sm mb-1.5">Where did you spot Paddy?</label>
-              <input
-                type="text"
-                value={store || storeSearch}
-                onChange={(e) => {
-                  setStore("");
-                  setStoreSearch(e.target.value);
-                  setShowStoreDropdown(true);
-                }}
-                onFocus={() => setShowStoreDropdown(true)}
-                placeholder="Search for a store..."
-                className="w-full h-12 px-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ "--tw-ring-color": C.green } as React.CSSProperties}
-              />
-              {showStoreDropdown && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-white/20 shadow-xl" style={{ background: C.purple }}>
-                  {filteredStores.map((s) => (
-                    <button
-                      type="button"
-                      key={s.name}
-                      onClick={() => {
-                        setStore(s.name);
-                        setStoreSearch("");
-                        setShowStoreDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
-                    >
-                      <span>{s.name}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: C.green + "30", color: C.green }}>{s.state}</span>
-                    </button>
-                  ))}
+            {/* State selector — step 1 */}
+            <div>
+              <label className="block text-white/70 text-sm mb-1.5">What state are you in?</label>
+              <div className="flex flex-wrap gap-2">
+                {STATES.map((s) => (
                   <button
                     type="button"
+                    key={s.code}
                     onClick={() => {
-                      setStore(storeSearch || "Other");
-                      setShowStoreDropdown(false);
+                      setSelectedState(s.code);
+                      setStore("");
+                      setStoreSearch("");
                     }}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 transition-colors border-t border-white/10"
-                    style={{ color: C.yellow }}
+                    className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{
+                      background: selectedState === s.code ? C.green : "rgba(255,255,255,0.08)",
+                      color: selectedState === s.code ? C.navy : "rgba(255,255,255,0.6)",
+                      border: selectedState === s.code ? `2px solid ${C.green}` : "2px solid rgba(255,255,255,0.15)",
+                    }}
                   >
-                    Other / Not listed
+                    {s.code}
                   </button>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
+
+            {/* Store selector — step 2 (shows after state is picked) */}
+            {selectedState && (
+              <div ref={storeRef} className="relative">
+                <label className="block text-white/70 text-sm mb-1.5">Where did you spot Paddy?</label>
+                <input
+                  type="text"
+                  value={store || storeSearch}
+                  onChange={(e) => {
+                    setStore("");
+                    setStoreSearch(e.target.value);
+                    setShowStoreDropdown(true);
+                  }}
+                  onFocus={() => setShowStoreDropdown(true)}
+                  placeholder={`Search stores in ${STATES.find(s => s.code === selectedState)?.name || selectedState}...`}
+                  className="w-full h-12 px-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:border-transparent"
+                  style={{ "--tw-ring-color": C.green } as React.CSSProperties}
+                />
+                {showStoreDropdown && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-white/20 shadow-xl" style={{ background: C.purple }}>
+                    {filteredStores.length > 0 ? (
+                      filteredStores.map((s) => (
+                        <button
+                          type="button"
+                          key={s.name}
+                          onClick={() => {
+                            setStore(s.name);
+                            setStoreSearch("");
+                            setShowStoreDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                        >
+                          <span>{s.name}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: C.green + "30", color: C.green }}>{s.state}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-white/40">No stores found</div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStore(storeSearch || `Other — ${selectedState}`);
+                        setShowStoreDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 transition-colors border-t border-white/10"
+                      style={{ color: C.yellow }}
+                    >
+                      Other / Not listed
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {formError && <p className="text-sm text-center" style={{ color: C.coral }}>{formError}</p>}
 

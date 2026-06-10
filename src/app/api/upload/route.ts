@@ -12,16 +12,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File and email required." }, { status: 400 });
     }
 
-    // In production: upload to Supabase Storage or Vercel Blob
+    // In production: upload to Vercel Blob
     // For now, just record the metadata
-    const upload = addUGCUpload({
+    const upload = await addUGCUpload({
       email: email.toLowerCase(),
       referralCode: referralCode || "",
       filename: file.name,
     });
 
     // Award bonus entry
-    const bonusAwarded = addUGCBonusEntry(email.toLowerCase(), referralCode);
+    const bonusAwarded = await addUGCBonusEntry(email.toLowerCase(), referralCode);
 
     return NextResponse.json({
       message: bonusAwarded

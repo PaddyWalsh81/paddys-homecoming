@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addEntry } from "@/lib/db";
+import { addSweepstakesSubscriber } from "@/lib/mailchimp";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { firstName, email, dob, zip, store, referredBy } = body;
+    const { firstName, email, dob, zip, store, state, referredBy } = body;
 
     // Validation
     if (!firstName?.trim() || !email?.trim() || !dob || !zip?.trim() || !store?.trim()) {
@@ -28,12 +29,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Must be 21 or older to enter." }, { status: 403 });
     }
 
-    const result = addEntry({
+    const result = await addEntry({
       firstName: firstName.trim(),
       email: email.trim().toLowerCase(),
       dob,
       zip: zip.trim(),
       store: store.trim(),
+      state: state || null,
       referredBy: referredBy || null,
     });
 
@@ -44,6 +46,17 @@ export async function POST(request: NextRequest) {
         alreadyEntered: true,
       });
     }
+
+    // Add to Mailchimp (non-blocking — don't let it break the entry flow)
+    const resolvedState = state || (store.match(/\b(MA|NH|DC|NY|MD)\b/) || [])[1] || "Other";
+    addSweepstakesSubscriber({
+      email: email.trim().toLowerCase(),
+      firstName: firstName.trim(),
+      zip: zip.trim(),
+      store: store.trim(),
+      state: resolvedState,
+      referralCode: result.referralCode,
+    }).catch((err) => console.error("[Mailchimp] Background error:", err));
 
     return NextResponse.json({
       message: "Entry received! You're in the draw.",

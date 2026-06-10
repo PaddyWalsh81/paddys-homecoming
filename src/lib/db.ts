@@ -1,11 +1,34 @@
 /**
- * In-memory database for development / initial deployment.
- * Replace with Supabase or Vercel KV for production persistence.
+ * Persistent database layer using Upstash Redis (via Vercel Storage).
  *
- * Structure:
- * - entries: all sweepstakes entries (direct + bonus)
- * - ugcUploads: user-generated content metadata
+ * Redis key schema:
+ *   entry:{id}                → JSON Entry
+ *   entry_ids                 → List of all entry IDs (newest first)
+ *   direct_by_email:{email}   → entry ID (dedup direct entries)
+ *   referral:{code}           → entry ID (lookup referral source)
+ *   ugc:{id}                  → JSON UGCUpload
+ *   ugc_ids                   → List of all UGC upload IDs
+ *   ugc_claimed:{email}       → "1" (dedup UGC bonus)
+ *   counter:direct            → int
+ *   counter:referral_bonus    → int
+ *   counter:ugc_bonus         → int
  */
+
+import { Redis } from "@upstash/redis";
+
+/* ── initialise client ── */
+const redis = new Redis({
+  url:
+    process.env.KV_REST_API_URL ||
+    process.env.UPSTASH_REDIS_REST_URL ||
+    "",
+  token:
+    process.env.KV_REST_API_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN ||
+    "",
+});
+
+/* ── types ── */
 
 export interface Entry {
   id: string;
@@ -14,6 +37,7 @@ export interface Entry {
   dob: string;
   zip: string;
   store: string;
+  state: string;
   referralCode: string;
   referredBy: string | null;
   entryType: "direct" | "referral_bonus" | "ugc_bonus";
@@ -28,9 +52,7 @@ export interface UGCUpload {
   createdAt: string;
 }
 
-// In-memory stores (reset on cold start — replace with real DB)
-const entries: Entry[] = [];
-const ugcUploads: UGCUpload[] = [];
+/* ── helpers ── */
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -45,105 +67,169 @@ function generateReferralCode(): string {
   return code;
 }
 
+/** Extract US state abbreviation from store string */
+function extractState(store: string): string {
+  const match = store.match(/\b(MA|NH|DC|NY|MD)\b/);
+  return match ? match[1] : "Other";
+}
+
 /* ── ENTRIES ── */
 
-export function addEntry(data: {
+export async function addEntry(data: {
   firstName: string;
   email: string;
   dob: string;
   zip: string;
   store: string;
+  state?: string | null;
   referredBy: string | null;
-}): { entry: Entry; isNew: boolean; referralCode: string } {
+}): Promise<{ entry: Entry; isNew: boolean; referralCode: string }> {
   // Check for duplicate email (direct entry)
-  const existing = entries.find(
-    (e) => e.email === data.email && e.entryType === "direct"
-  );
-  if (existing) {
-    return { entry: existing, isNew: false, referralCode: existing.referralCode };
+  const existingId = await redis.get<string>(`direct_by_email:${data.email}`);
+  if (existingId) {
+    const existing = await redis.get<Entry>(`entry:${existingId}`);
+    if (existing) {
+      return { entry: existing, isNew: false, referralCode: existing.referralCode };
+    }
   }
 
   const referralCode = generateReferralCode();
+  const state = data.state || extractState(data.store);
   const entry: Entry = {
     id: generateId(),
     ...data,
+    state,
     referralCode,
     entryType: "direct",
     createdAt: new Date().toISOString(),
   };
-  entries.push(entry);
+
+  // Store entry + indexes (pipeline for efficiency)
+  const pipe = redis.pipeline();
+  pipe.set(`entry:${entry.id}`, JSON.stringify(entry));
+  pipe.lpush("entry_ids", entry.id);
+  pipe.set(`direct_by_email:${data.email}`, entry.id);
+  pipe.set(`referral:${referralCode}`, entry.id);
+  pipe.incr("counter:direct");
+  await pipe.exec();
 
   // If referred by someone, give the referrer a bonus entry
   if (data.referredBy) {
-    const referrer = entries.find(
-      (e) => e.referralCode === data.referredBy && e.entryType === "direct"
-    );
-    if (referrer) {
-      entries.push({
-        id: generateId(),
-        firstName: referrer.firstName,
-        email: referrer.email,
-        dob: referrer.dob,
-        zip: referrer.zip,
-        store: referrer.store,
-        referralCode: referrer.referralCode,
-        referredBy: null,
-        entryType: "referral_bonus",
-        createdAt: new Date().toISOString(),
-      });
+    const referrerId = await redis.get<string>(`referral:${data.referredBy}`);
+    if (referrerId) {
+      const referrer = await redis.get<Entry>(`entry:${referrerId}`);
+      if (referrer) {
+        const bonusId = generateId();
+        const bonusEntry: Entry = {
+          id: bonusId,
+          firstName: referrer.firstName,
+          email: referrer.email,
+          dob: referrer.dob,
+          zip: referrer.zip,
+          store: referrer.store,
+          state: referrer.state,
+          referralCode: referrer.referralCode,
+          referredBy: null,
+          entryType: "referral_bonus",
+          createdAt: new Date().toISOString(),
+        };
+        const bonusPipe = redis.pipeline();
+        bonusPipe.set(`entry:${bonusId}`, JSON.stringify(bonusEntry));
+        bonusPipe.lpush("entry_ids", bonusId);
+        bonusPipe.incr("counter:referral_bonus");
+        await bonusPipe.exec();
+      }
     }
   }
 
   return { entry, isNew: true, referralCode };
 }
 
-export function addUGCBonusEntry(email: string, referralCode: string): boolean {
-  const direct = entries.find(
-    (e) => e.email === email && e.entryType === "direct"
-  );
+export async function addUGCBonusEntry(email: string, referralCode: string): Promise<boolean> {
+  // Check if direct entry exists
+  const directId = await redis.get<string>(`direct_by_email:${email}`);
+  if (!directId) return false;
+
+  // Check if already claimed UGC bonus
+  const claimed = await redis.get<string>(`ugc_claimed:${email}`);
+  if (claimed) return false;
+
+  const direct = await redis.get<Entry>(`entry:${directId}`);
   if (!direct) return false;
 
-  // Check if already got a UGC bonus
-  const existing = entries.find(
-    (e) => e.email === email && e.entryType === "ugc_bonus"
-  );
-  if (existing) return false;
-
-  entries.push({
-    id: generateId(),
+  const bonusId = generateId();
+  const bonusEntry: Entry = {
+    id: bonusId,
     firstName: direct.firstName,
     email: direct.email,
     dob: direct.dob,
     zip: direct.zip,
     store: direct.store,
+    state: direct.state || extractState(direct.store),
     referralCode: direct.referralCode,
     referredBy: null,
     entryType: "ugc_bonus",
     createdAt: new Date().toISOString(),
-  });
+  };
+
+  const pipe = redis.pipeline();
+  pipe.set(`entry:${bonusId}`, JSON.stringify(bonusEntry));
+  pipe.lpush("entry_ids", bonusId);
+  pipe.set(`ugc_claimed:${email}`, "1");
+  pipe.incr("counter:ugc_bonus");
+  await pipe.exec();
+
   return true;
 }
 
-export function addUGCUpload(data: {
+export async function addUGCUpload(data: {
   email: string;
   referralCode: string;
   filename: string;
-}): UGCUpload {
+}): Promise<UGCUpload> {
   const upload: UGCUpload = {
     id: generateId(),
     ...data,
     createdAt: new Date().toISOString(),
   };
-  ugcUploads.push(upload);
+  const pipe = redis.pipeline();
+  pipe.set(`ugc:${upload.id}`, JSON.stringify(upload));
+  pipe.lpush("ugc_ids", upload.id);
+  await pipe.exec();
   return upload;
 }
 
 /* ── STATS ── */
 
-export function getStats() {
+async function getAllEntries(): Promise<Entry[]> {
+  const ids = await redis.lrange<string>("entry_ids", 0, -1);
+  if (!ids || ids.length === 0) return [];
+
+  // Batch fetch in chunks of 100
+  const entries: Entry[] = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const pipe = redis.pipeline();
+    chunk.forEach((id) => pipe.get(`entry:${id}`));
+    const results = await pipe.exec();
+    results.forEach((r) => {
+      if (r) {
+        const entry = typeof r === "string" ? JSON.parse(r) : r;
+        entries.push(entry as Entry);
+      }
+    });
+  }
+  return entries;
+}
+
+export async function getStats() {
+  const entries = await getAllEntries();
   const directEntries = entries.filter((e) => e.entryType === "direct");
   const referralBonuses = entries.filter((e) => e.entryType === "referral_bonus");
   const ugcBonuses = entries.filter((e) => e.entryType === "ugc_bonus");
+
+  // Count UGC uploads
+  const ugcIds = await redis.lrange<string>("ugc_ids", 0, -1);
 
   // By store
   const byStore: Record<string, number> = {};
@@ -151,11 +237,10 @@ export function getStats() {
     byStore[e.store] = (byStore[e.store] || 0) + 1;
   });
 
-  // By state (extract from store name or zip)
+  // By state
   const byState: Record<string, number> = {};
   directEntries.forEach((e) => {
-    const match = e.store.match(/\b(MA|NH|DC|NY|MD)\b/);
-    const state = match ? match[1] : "Other";
+    const state = e.state || extractState(e.store);
     byState[state] = (byState[state] || 0) + 1;
   });
 
@@ -166,7 +251,7 @@ export function getStats() {
     byDate[date] = (byDate[date] || 0) + 1;
   });
 
-  // Referral leaderboard (who generated the most bonus entries)
+  // Referral leaderboard
   const referralCounts: Record<string, { name: string; count: number }> = {};
   referralBonuses.forEach((e) => {
     if (!referralCounts[e.email]) {
@@ -184,7 +269,7 @@ export function getStats() {
     totalReferralBonuses: referralBonuses.length,
     totalUGCBonuses: ugcBonuses.length,
     totalDrawEntries: entries.length,
-    totalUGCUploads: ugcUploads.length,
+    totalUGCUploads: ugcIds?.length || 0,
     byStore: Object.entries(byStore)
       .map(([store, count]) => ({ store, count }))
       .sort((a, b) => b.count - a.count),
@@ -200,12 +285,13 @@ export function getStats() {
 
 /* ── DRAW ── */
 
-export function executeDraw(): {
+export async function executeDraw(): Promise<{
   winner: Entry;
   totalEntries: number;
   drawTimestamp: string;
   auditLog: string;
-} | null {
+} | null> {
+  const entries = await getAllEntries();
   if (entries.length === 0) return null;
 
   // Cryptographic random selection
@@ -233,10 +319,11 @@ export function executeDraw(): {
 
 /* ── EXPORT ── */
 
-export function exportCSV(): string {
-  const headers = "id,firstName,email,dob,zip,store,referralCode,referredBy,entryType,createdAt";
+export async function exportCSV(): Promise<string> {
+  const entries = await getAllEntries();
+  const headers = "id,firstName,email,dob,zip,store,state,referralCode,referredBy,entryType,createdAt";
   const rows = entries.map((e) =>
-    [e.id, e.firstName, e.email, e.dob, e.zip, `"${e.store}"`, e.referralCode, e.referredBy || "", e.entryType, e.createdAt].join(",")
+    [e.id, e.firstName, e.email, e.dob, e.zip, `"${e.store}"`, e.state || "", e.referralCode, e.referredBy || "", e.entryType, e.createdAt].join(",")
   );
   return [headers, ...rows].join("\n");
 }
