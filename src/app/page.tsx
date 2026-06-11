@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
+import { STORES, CORE_STATES, OTHER_STATES, ALL_STATES } from "../data/stores";
 
 /* ── colour tokens ── */
 const C = {
@@ -12,34 +13,6 @@ const C = {
   light: "#F3F3F3",
   orange: "#F7911E",
 };
-
-/* ── US states where Flying Tumbler is available ── */
-const STATES = [
-  { code: "MA", name: "Massachusetts" },
-  { code: "NH", name: "New Hampshire" },
-  { code: "DC", name: "Washington DC" },
-  { code: "NY", name: "New York" },
-  { code: "MD", name: "Maryland" },
-];
-
-/* ── store list (placeholder — replace with full account list from Patrick) ── */
-const STORES: { name: string; state: string }[] = [
-  { name: "Curtis Liquors — Quincy", state: "MA" },
-  { name: "Kappy's Fine Wine & Spirits — Medford", state: "MA" },
-  { name: "Total Wine & More — Everett", state: "MA" },
-  { name: "Julio's Liquors — Westborough", state: "MA" },
-  { name: "Blanchard's — Allston", state: "MA" },
-  { name: "Gordon's Fine Wine & Liquors — Waltham", state: "MA" },
-  { name: "NH Liquor & Wine Outlet — Nashua", state: "NH" },
-  { name: "NH Liquor & Wine Outlet — Hooksett", state: "NH" },
-  { name: "NH Liquor & Wine Outlet — Portsmouth", state: "NH" },
-  { name: "Calvert Woodley — Washington DC", state: "DC" },
-  { name: "Schneider's of Capitol Hill — DC", state: "DC" },
-  { name: "Astor Wines & Spirits — NYC", state: "NY" },
-  { name: "Park Avenue Liquor — NYC", state: "NY" },
-  { name: "Kenilworth Wine & Spirits — Towson", state: "MD" },
-  { name: "Wells Discount Liquors — Baltimore", state: "MD" },
-];
 
 /* ── pigeon SVG (simplified) ── */
 function PigeonIcon({ className = "", size = 48 }: { className?: string; size?: number }) {
@@ -116,24 +89,33 @@ export default function Home() {
 
   const storeRef = useRef<HTMLDivElement>(null);
 
+  /* more-states dropdown */
+  const [showMoreStates, setShowMoreStates] = useState(false);
+  const moreStatesRef = useRef<HTMLDivElement>(null);
+
   /* filtered stores — state-first: filter by selected state, then by search text */
   const filteredStores = useMemo(() => {
     let result = STORES;
     if (selectedState) {
-      result = result.filter((s) => s.state === selectedState);
+      result = result.filter((s) => s.s === selectedState);
     }
     if (storeSearch) {
       const q = storeSearch.toLowerCase();
-      result = result.filter((s) => s.name.toLowerCase().includes(q));
+      result = result.filter(
+        (s) => s.n.toLowerCase().includes(q) || s.c.toLowerCase().includes(q)
+      );
     }
-    return result;
+    return result.slice(0, 50); // cap dropdown at 50 for performance
   }, [selectedState, storeSearch]);
 
-  /* close dropdown on outside click */
+  /* close dropdowns on outside click */
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (storeRef.current && !storeRef.current.contains(e.target as Node)) {
         setShowStoreDropdown(false);
+      }
+      if (moreStatesRef.current && !moreStatesRef.current.contains(e.target as Node)) {
+        setShowMoreStates(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -379,7 +361,7 @@ export default function Home() {
             <div>
               <label className="block text-white/70 text-sm mb-1.5">What state are you in?</label>
               <div className="flex flex-wrap gap-2">
-                {STATES.map((s) => (
+                {CORE_STATES.map((s) => (
                   <button
                     type="button"
                     key={s.code}
@@ -387,6 +369,7 @@ export default function Home() {
                       setSelectedState(s.code);
                       setStore("");
                       setStoreSearch("");
+                      setShowMoreStates(false);
                     }}
                     className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{
@@ -398,6 +381,43 @@ export default function Home() {
                     {s.code}
                   </button>
                 ))}
+                {/* More states dropdown */}
+                <div ref={moreStatesRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowMoreStates(!showMoreStates)}
+                    className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{
+                      background: OTHER_STATES.some(s => s.code === selectedState) ? C.green : "rgba(255,255,255,0.08)",
+                      color: OTHER_STATES.some(s => s.code === selectedState) ? C.navy : "rgba(255,255,255,0.6)",
+                      border: OTHER_STATES.some(s => s.code === selectedState) ? `2px solid ${C.green}` : "2px solid rgba(255,255,255,0.15)",
+                    }}
+                  >
+                    {OTHER_STATES.some(s => s.code === selectedState)
+                      ? ALL_STATES.find(s => s.code === selectedState)?.code
+                      : "More ▾"}
+                  </button>
+                  {showMoreStates && (
+                    <div className="absolute z-50 top-full left-0 mt-1 w-56 max-h-48 overflow-y-auto rounded-lg border border-white/20 shadow-xl" style={{ background: C.purple }}>
+                      {OTHER_STATES.map((s) => (
+                        <button
+                          type="button"
+                          key={s.code}
+                          onClick={() => {
+                            setSelectedState(s.code);
+                            setStore("");
+                            setStoreSearch("");
+                            setShowMoreStates(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                          style={selectedState === s.code ? { background: C.green + "30", color: C.green } : {}}
+                        >
+                          {s.name} ({s.code})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -414,30 +434,33 @@ export default function Home() {
                     setShowStoreDropdown(true);
                   }}
                   onFocus={() => setShowStoreDropdown(true)}
-                  placeholder={`Search stores in ${STATES.find(s => s.code === selectedState)?.name || selectedState}...`}
+                  placeholder={`Search stores in ${ALL_STATES.find(s => s.code === selectedState)?.name || selectedState}...`}
                   className="w-full h-12 px-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:border-transparent"
                   style={{ "--tw-ring-color": C.green } as React.CSSProperties}
                 />
                 {showStoreDropdown && (
                   <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-white/20 shadow-xl" style={{ background: C.purple }}>
                     {filteredStores.length > 0 ? (
-                      filteredStores.map((s) => (
+                      filteredStores.map((s, idx) => (
                         <button
                           type="button"
-                          key={s.name}
+                          key={`${s.n}-${s.c}-${idx}`}
                           onClick={() => {
-                            setStore(s.name);
+                            setStore(`${s.n} — ${s.c}`);
                             setStoreSearch("");
                             setShowStoreDropdown(false);
                           }}
                           className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
                         >
-                          <span>{s.name}</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: C.green + "30", color: C.green }}>{s.state}</span>
+                          <span className="truncate mr-2">{s.n} <span className="text-white/40">— {s.c}</span></span>
+                          <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: C.green + "30", color: C.green }}>{s.s}</span>
                         </button>
                       ))
                     ) : (
-                      <div className="px-4 py-3 text-sm text-white/40">No stores found</div>
+                      <div className="px-4 py-3 text-sm text-white/40">No stores found — try a different search</div>
+                    )}
+                    {filteredStores.length === 50 && (
+                      <div className="px-4 py-2 text-xs text-white/30 border-t border-white/10">Type to narrow results...</div>
                     )}
                     <button
                       type="button"
