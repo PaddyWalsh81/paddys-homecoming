@@ -12,6 +12,14 @@
  *   counter:direct            → int
  *   counter:referral_bonus    → int
  *   counter:ugc_bonus         → int
+ *
+ * Merch redemption keys:
+ *   merch:{id}                → JSON MerchRedemption
+ *   merch_ids                 → List of all merch redemption IDs (newest first)
+ *   merch_by_email:{email}    → merch ID (dedup — one per consumer)
+ *   counter:merch_pending     → int
+ *   counter:merch_approved    → int
+ *   counter:merch_rejected    → int
  */
 
 import { Redis } from "@upstash/redis";
@@ -51,6 +59,34 @@ export interface UGCUpload {
   referralCode: string;
   filename: string;
   createdAt: string;
+}
+
+export interface MerchRedemption {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  store: string;
+  state: string;
+  /** Receipt photo filename (stored in KV as base64 or URL) */
+  receiptFilename: string;
+  /** Shipping address */
+  shippingName: string;
+  shippingAddress1: string;
+  shippingAddress2: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingZip: string;
+  /** Product selected */
+  product: string;
+  /** Status: pending → approved → fulfilled / rejected */
+  status: "pending" | "approved" | "rejected" | "fulfilled";
+  /** Printful order ID (set on approval) */
+  printfulOrderId: number | null;
+  /** Admin notes */
+  adminNotes: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /* ── helpers ── */
@@ -319,6 +355,118 @@ export async function executeDraw(): Promise<{
   ].join("\n");
 
   return { winner, totalEntries: entries.length, drawTimestamp, auditLog };
+}
+
+/* ── MERCH REDEMPTIONS ── */
+
+export async function addMerchRedemption(data: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  store: string;
+  state: string;
+  receiptFilename: string;
+  shippingName: string;
+  shippingAddress1: string;
+  shippingAddress2?: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingZip: string;
+  product: string;
+}): Promise<{ redemption: MerchRedemption; isNew: boolean }> {
+  // Check for existing redemption by email (one per consumer)
+  const existingId = await redis.get<string>(`merch_by_email:${data.email}`);
+  if (existingId) {
+    const existing = await redis.get<MerchRedemption>(`merch:${existingId}`);
+    if (existing) {
+      return { redemption: existing, isNew: false };
+    }
+  }
+
+  const now = new Date().toISOString();
+  const redemption: MerchRedemption = {
+    id: generateId(),
+    email: data.email,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    store: data.store,
+    state: data.state,
+    receiptFilename: data.receiptFilename,
+    shippingName: data.shippingName,
+    shippingAddress1: data.shippingAddress1,
+    shippingAddress2: data.shippingAddress2 || "",
+    shippingCity: data.shippingCity,
+    shippingState: data.shippingState,
+    shippingZip: data.shippingZip,
+    product: data.product,
+    status: "pending",
+    printfulOrderId: null,
+    adminNotes: "",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const pipe = redis.pipeline();
+  pipe.set(`merch:${redemption.id}`, JSON.stringify(redemption));
+  pipe.lpush("merch_ids", redemption.id);
+  pipe.set(`merch_by_email:${data.email}`, redemption.id);
+  pipe.incr("counter:merch_pending");
+  await pipe.exec();
+
+  return { redemption, isNew: true };
+}
+
+export async function getMerchRedemption(id: string): Promise<MerchRedemption | null> {
+  const data = await redis.get<MerchRedemption>(`merch:${id}`);
+  return data || null;
+}
+
+export async function getAllMerchRedemptions(): Promise<MerchRedemption[]> {
+  const ids = await redis.lrange<string>("merch_ids", 0, -1);
+  if (!ids || ids.length === 0) return [];
+
+  const redemptions: MerchRedemption[] = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const pipe = redis.pipeline();
+    chunk.forEach((id) => pipe.get(`merch:${id}`));
+    const results = await pipe.exec();
+    results.forEach((r) => {
+      if (r) {
+        const item = typeof r === "string" ? JSON.parse(r) : r;
+        redemptions.push(item as MerchRedemption);
+      }
+    });
+  }
+  return redemptions;
+}
+
+export async function updateMerchRedemption(
+  id: string,
+  updates: Partial<Pick<MerchRedemption, "status" | "printfulOrderId" | "adminNotes">>
+): Promise<MerchRedemption | null> {
+  const existing = await redis.get<MerchRedemption>(`merch:${id}`);
+  if (!existing) return null;
+
+  const parsed = typeof existing === "string" ? JSON.parse(existing) : existing;
+  const updated: MerchRedemption = {
+    ...parsed,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await redis.set(`merch:${id}`, JSON.stringify(updated));
+
+  // Update counters on status change
+  if (updates.status && updates.status !== parsed.status) {
+    const pipe = redis.pipeline();
+    if (parsed.status === "pending") pipe.decr("counter:merch_pending");
+    if (updates.status === "approved") pipe.incr("counter:merch_approved");
+    if (updates.status === "rejected") pipe.incr("counter:merch_rejected");
+    await pipe.exec();
+  }
+
+  return updated;
 }
 
 /* ── EXPORT ── */

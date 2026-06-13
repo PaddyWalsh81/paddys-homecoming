@@ -71,6 +71,18 @@ export default function Home() {
   const [ugcUploaded, setUgcUploaded] = useState(false);
   const [ugcConsent, setUgcConsent] = useState(false);
 
+  /* Merch redemption */
+  const [merchStep, setMerchStep] = useState<"offer" | "form" | "submitted">("offer");
+  const [merchReceipt, setMerchReceipt] = useState<File | null>(null);
+  const [merchShipName, setMerchShipName] = useState("");
+  const [merchShipAddr1, setMerchShipAddr1] = useState("");
+  const [merchShipAddr2, setMerchShipAddr2] = useState("");
+  const [merchShipCity, setMerchShipCity] = useState("");
+  const [merchShipState, setMerchShipState] = useState("");
+  const [merchShipZip, setMerchShipZip] = useState("");
+  const [merchSubmitting, setMerchSubmitting] = useState(false);
+  const [merchError, setMerchError] = useState("");
+
   const storeRef = useRef<HTMLDivElement>(null);
 
   /* more-states dropdown */
@@ -195,6 +207,47 @@ export default function Home() {
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  /* ── MERCH REDEMPTION SUBMIT ── */
+  async function handleMerchSubmit() {
+    setMerchError("");
+    if (!merchReceipt || !merchShipName || !merchShipAddr1 || !merchShipCity || !merchShipState || !merchShipZip) {
+      setMerchError("Please fill in all required fields and upload your receipt.");
+      return;
+    }
+    setMerchSubmitting(true);
+    try {
+      const res = await fetch("/api/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          firstName,
+          lastName: "",
+          store,
+          state: selectedState,
+          receiptFilename: merchReceipt.name,
+          shippingName: merchShipName,
+          shippingAddress1: merchShipAddr1,
+          shippingAddress2: merchShipAddr2,
+          shippingCity: merchShipCity,
+          shippingState: merchShipState,
+          shippingZip: merchShipZip,
+          product: "canCooler",
+        }),
+      });
+      if (res.ok) {
+        setMerchStep("submitted");
+      } else {
+        const data = await res.json();
+        setMerchError(data.error || "Something went wrong. Please try again.");
+      }
+    } catch {
+      setMerchError("Network error. Please try again.");
+    } finally {
+      setMerchSubmitting(false);
+    }
   }
 
   /* helper: generate month/day/year options */
@@ -770,6 +823,200 @@ export default function Home() {
               </svg>
               Email
             </a>
+          </div>
+        </div>
+
+        {/* ── MERCH OFFER card (separate promotion) ── */}
+        <div
+          className="rounded-2xl overflow-hidden mb-5 fade-in-delay-1"
+          style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.2)", border: `2px solid ${C.yellow}40` }}
+        >
+          {/* Accent bar */}
+          <div className="px-5 py-2 flex items-center gap-2" style={{ background: C.navy }}>
+            <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full" style={{ background: C.yellow, color: C.navy }}>
+              Separate offer
+            </span>
+            <span className="text-white/50 text-[10px] tracking-wide uppercase">Gift with purchase</span>
+          </div>
+
+          <div className="p-6" style={{ background: "white" }}>
+            {merchStep === "submitted" ? (
+              /* ── Success state ── */
+              <div className="text-center py-4">
+                <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: C.green + "20" }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <h2 className="font-display text-xl font-bold mb-1" style={{ color: C.navy }}>Merch claimed!</h2>
+                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                  We&apos;ll review your receipt and ship your free Flying Tumbler can cooler. Check your email for updates.
+                </p>
+              </div>
+            ) : merchStep === "form" ? (
+              /* ── Shipping form ── */
+              <>
+                <button
+                  onClick={() => setMerchStep("offer")}
+                  className="text-xs mb-3 flex items-center gap-1 transition-colors hover:opacity-70"
+                  style={{ color: C.purple }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  Back
+                </button>
+                <h2 className="font-display text-lg font-bold mb-1" style={{ color: C.navy }}>
+                  Claim your free can cooler
+                </h2>
+                <p className="text-xs text-gray-400 mb-4">
+                  Upload a photo of your receipt showing a Flying Tumbler purchase, then enter your shipping address.
+                </p>
+
+                {/* Receipt upload */}
+                <label
+                  className="block w-full rounded-xl border-2 border-dashed cursor-pointer transition-colors hover:border-gray-300 mb-4"
+                  style={{ borderColor: merchReceipt ? C.green : "#E0E0E0", background: merchReceipt ? C.green + "08" : "transparent" }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => setMerchReceipt(e.target.files?.[0] || null)}
+                  />
+                  <div className="flex flex-col items-center justify-center py-6 gap-1">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={merchReceipt ? C.green : "#CCC"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span className="text-xs" style={{ color: merchReceipt ? C.navy : "#AAA" }}>
+                      {merchReceipt ? merchReceipt.name : "Tap to upload receipt photo"}
+                    </span>
+                  </div>
+                </label>
+
+                {/* Shipping fields */}
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Full name *"
+                    value={merchShipName}
+                    onChange={(e) => setMerchShipName(e.target.value)}
+                    className="w-full h-11 px-4 rounded-lg border text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Street address *"
+                    value={merchShipAddr1}
+                    onChange={(e) => setMerchShipAddr1(e.target.value)}
+                    className="w-full h-11 px-4 rounded-lg border text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Apt / Suite (optional)"
+                    value={merchShipAddr2}
+                    onChange={(e) => setMerchShipAddr2(e.target.value)}
+                    className="w-full h-11 px-4 rounded-lg border text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties}
+                  />
+                  <div className="grid grid-cols-5 gap-2">
+                    <input
+                      type="text"
+                      placeholder="City *"
+                      value={merchShipCity}
+                      onChange={(e) => setMerchShipCity(e.target.value)}
+                      className="col-span-2 h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2"
+                      style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties}
+                    />
+                    <input
+                      type="text"
+                      placeholder="State *"
+                      value={merchShipState}
+                      onChange={(e) => setMerchShipState(e.target.value.toUpperCase().slice(0, 2))}
+                      maxLength={2}
+                      className="col-span-1 h-11 px-3 rounded-lg border text-sm text-center uppercase focus:outline-none focus:ring-2"
+                      style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties}
+                    />
+                    <input
+                      type="text"
+                      placeholder="ZIP *"
+                      value={merchShipZip}
+                      onChange={(e) => setMerchShipZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                      maxLength={5}
+                      className="col-span-2 h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2"
+                      style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties}
+                    />
+                  </div>
+                </div>
+
+                {merchError && (
+                  <p className="text-xs mt-3" style={{ color: C.coral }}>{merchError}</p>
+                )}
+
+                <button
+                  onClick={handleMerchSubmit}
+                  disabled={merchSubmitting || !merchReceipt || !merchShipName || !merchShipAddr1 || !merchShipCity || !merchShipState || !merchShipZip}
+                  className="w-full h-12 rounded-lg font-semibold text-sm mt-4 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{ background: C.green, color: "white" }}
+                >
+                  {merchSubmitting ? "Submitting..." : "Claim my free can cooler"}
+                </button>
+                <p className="text-[10px] text-gray-400 mt-2 text-center">
+                  Ships in 5–11 business days. US addresses only. One per customer.
+                </p>
+              </>
+            ) : (
+              /* ── Offer card (initial state) ── */
+              <>
+                <div className="flex gap-4 items-start">
+                  <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0" style={{ background: C.green + "15" }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 12v10H4V12" />
+                      <rect x="2" y="7" width="20" height="5" rx="1" />
+                      <line x1="12" y1="22" x2="12" y2="7" />
+                      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" />
+                      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-display text-lg font-bold leading-snug" style={{ color: C.navy }}>
+                      Receive a free Flying Tumbler can cooler
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      Buy a bottle of The Bird today and get a branded can cooler shipped to you — on us. Just snap a photo of your receipt.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center gap-3 p-3 rounded-xl" style={{ background: C.light }}>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: C.green }} />
+                    <span className="text-xs font-medium" style={{ color: C.navy }}>No cost to you</span>
+                  </div>
+                  <div className="w-px h-4 bg-gray-300" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: C.yellow }} />
+                    <span className="text-xs font-medium" style={{ color: C.navy }}>Ships free</span>
+                  </div>
+                  <div className="w-px h-4 bg-gray-300" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: C.coral }} />
+                    <span className="text-xs font-medium" style={{ color: C.navy }}>While stocks last</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setMerchStep("form")}
+                  className="w-full h-12 rounded-lg font-semibold text-sm mt-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: C.yellow, color: C.navy }}
+                >
+                  I bought a bottle — claim my merch
+                </button>
+              </>
+            )}
           </div>
         </div>
 

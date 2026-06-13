@@ -28,6 +28,28 @@ interface DrawResult {
   auditLog: string;
 }
 
+interface MerchRedemption {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  store: string;
+  state: string;
+  receiptFilename: string;
+  shippingName: string;
+  shippingAddress1: string;
+  shippingAddress2: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingZip: string;
+  product: string;
+  status: "pending" | "approved" | "rejected" | "fulfilled";
+  printfulOrderId: number | null;
+  adminNotes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -35,6 +57,8 @@ export default function AdminDashboard() {
   const [drawResult, setDrawResult] = useState<DrawResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [merchRedemptions, setMerchRedemptions] = useState<MerchRedemption[]>([]);
+  const [merchTab, setMerchTab] = useState<"pending" | "approved" | "rejected" | "all">("pending");
 
   const authHeader = useCallback(() => {
     return "Basic " + btoa("admin:" + password);
@@ -55,6 +79,14 @@ export default function AdminDashboard() {
       const data = await res.json();
       setStats(data);
       setAuthed(true);
+      // Also fetch merch redemptions
+      try {
+        const merchRes = await fetch(`/api/redeem?pw=${encodeURIComponent(password)}`);
+        if (merchRes.ok) {
+          const merchData = await merchRes.json();
+          setMerchRedemptions(merchData.redemptions || []);
+        }
+      } catch { /* */ }
     } catch {
       setError("Connection failed.");
     }
@@ -106,6 +138,42 @@ export default function AdminDashboard() {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  async function fetchMerchRedemptions() {
+    try {
+      const res = await fetch(`/api/redeem?pw=${encodeURIComponent(password)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMerchRedemptions(data.redemptions || []);
+      }
+    } catch { /* */ }
+  }
+
+  async function handleMerchAction(id: string, action: "approve" | "reject") {
+    const notes = action === "reject" ? prompt("Rejection reason (optional):") || "" : "";
+    if (action === "approve" && !confirm("Approve this receipt and create a Printful order?")) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/redeem?pw=${encodeURIComponent(password)}&id=${id}&action=${action}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action, notes }),
+      });
+      if (res.ok) {
+        await fetchMerchRedemptions();
+      } else {
+        const data = await res.json();
+        setError(data.error || `${action} failed.`);
+      }
+    } catch {
+      setError(`${action} failed.`);
+    }
+    setLoading(false);
+  }
+
+  const filteredMerch = merchRedemptions.filter((r) =>
+    merchTab === "all" ? true : r.status === merchTab
+  );
 
   /* LOGIN SCREEN */
   if (!authed) {
@@ -225,6 +293,109 @@ export default function AdminDashboard() {
                         <p className="text-white/40 text-xs truncate">{r.email}</p>
                       </div>
                       <span className="font-display text-xl" style={{ color: C.green }}>{r.count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Merch Redemptions */}
+            <div className="rounded-xl p-5 mb-8" style={{ background: "rgba(255,255,255,0.06)", border: `2px solid ${C.yellow}40` }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl text-white tracking-wide">MERCH REDEMPTIONS</h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: C.yellow + "20", color: C.yellow }}>
+                    {merchRedemptions.filter((r) => r.status === "pending").length} pending
+                  </span>
+                  <button onClick={fetchMerchRedemptions} className="text-xs text-white/40 hover:text-white/70 transition-colors">
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              {/* Tab filters */}
+              <div className="flex gap-1 mb-4 p-1 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
+                {(["pending", "approved", "rejected", "all"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setMerchTab(tab)}
+                    className="flex-1 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all"
+                    style={{
+                      background: merchTab === tab ? C.navy : "transparent",
+                      color: merchTab === tab ? "white" : "rgba(255,255,255,0.4)",
+                    }}
+                  >
+                    {tab} ({tab === "all" ? merchRedemptions.length : merchRedemptions.filter((r) => r.status === tab).length})
+                  </button>
+                ))}
+              </div>
+
+              {/* Redemption list */}
+              {filteredMerch.length === 0 ? (
+                <p className="text-white/40 text-sm py-4 text-center">No {merchTab === "all" ? "" : merchTab} redemptions.</p>
+              ) : (
+                <div className="space-y-3">
+                  {filteredMerch.map((r) => (
+                    <div key={r.id} className="rounded-lg p-4" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-white text-sm font-semibold">{r.firstName} {r.lastName}</p>
+                            <span
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+                              style={{
+                                background:
+                                  r.status === "pending" ? C.yellow + "20" :
+                                  r.status === "approved" || r.status === "fulfilled" ? C.green + "20" :
+                                  C.coral + "20",
+                                color:
+                                  r.status === "pending" ? C.yellow :
+                                  r.status === "approved" || r.status === "fulfilled" ? C.green :
+                                  C.coral,
+                              }}
+                            >
+                              {r.status}
+                            </span>
+                          </div>
+                          <p className="text-white/50 text-xs">{r.email}</p>
+                          <p className="text-white/40 text-xs mt-1">
+                            Store: {r.store} | Receipt: {r.receiptFilename}
+                          </p>
+                          <p className="text-white/40 text-xs">
+                            Ship to: {r.shippingName}, {r.shippingAddress1}{r.shippingAddress2 ? `, ${r.shippingAddress2}` : ""}, {r.shippingCity}, {r.shippingState} {r.shippingZip}
+                          </p>
+                          {r.printfulOrderId && (
+                            <p className="text-xs mt-1" style={{ color: C.green }}>
+                              Printful Order #{r.printfulOrderId}
+                            </p>
+                          )}
+                          {r.adminNotes && (
+                            <p className="text-white/30 text-xs mt-1 italic">{r.adminNotes}</p>
+                          )}
+                          <p className="text-white/20 text-[10px] mt-1">{new Date(r.createdAt).toLocaleString()}</p>
+                        </div>
+
+                        {r.status === "pending" && (
+                          <div className="flex gap-2 shrink-0">
+                            <button
+                              onClick={() => handleMerchAction(r.id, "approve")}
+                              disabled={loading}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:scale-[1.02] disabled:opacity-30"
+                              style={{ background: C.green, color: "white" }}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleMerchAction(r.id, "reject")}
+                              disabled={loading}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:scale-[1.02] disabled:opacity-30"
+                              style={{ background: C.coral, color: "white" }}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
