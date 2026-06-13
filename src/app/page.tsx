@@ -28,7 +28,7 @@ function LegalFooter() {
       />
       <p className="text-white/30 text-xs max-w-md mx-auto leading-relaxed">
         NO PURCHASE NECESSARY. Must be 21+. Open to legal US residents. Ends 12/31/2026.
-        See <a href="#rules" className="underline hover:text-white/50 transition-colors">Official Rules</a>. Void where prohibited.
+        See <a href="/rules" className="underline hover:text-white/50 transition-colors">Official Rules</a>. Void where prohibited.
       </p>
       <p className="text-white/30 text-xs max-w-md mx-auto leading-relaxed">
         Alternative method of entry: Email paddyshomecoming@flyingtumbler.com with your full name, date of birth, email, and zip code. Subject line: &quot;Paddy&apos;s Homecoming Entry.&quot;
@@ -589,7 +589,7 @@ export default function Home() {
 
             <p className="text-xs text-center text-gray-400 leading-relaxed">
               NO PURCHASE NECESSARY. Must be 21+. Ends 12/31/2026. See{" "}
-              <a href="#rules" className="underline">official rules</a>. Void where prohibited.
+              <a href="/rules" className="underline">official rules</a>. Void where prohibited.
             </p>
           </form>
 
