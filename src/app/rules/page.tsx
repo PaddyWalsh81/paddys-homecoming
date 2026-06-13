@@ -13,7 +13,7 @@ const CAMPAIGN = {
   winnerNotifyDays: 5,
   responseDays: 7,
   prize: "two (2) round-trip economy class airline tickets from a major U.S. gateway airport to Dublin, Ireland",
-  prizeARV: "$2,000",
+  prizeARV: "$1,000",
   amoeEmail: "paddyshomecoming@flyingtumbler.com",
   amoeSubject: "Paddy's Homecoming Entry",
   sponsor: "MHW, Ltd. d/b/a Flying Tumbler",
