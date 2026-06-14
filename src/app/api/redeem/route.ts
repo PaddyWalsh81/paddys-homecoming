@@ -174,7 +174,7 @@ export async function PATCH(req: NextRequest) {
       // Try to create Printful order
       let printfulOrderId: number | null = null;
       try {
-        const { createCanCoolerOrder, confirmOrder } = await import(
+        const { createMerchOrder, confirmOrder, MERCH_PRODUCTS } = await import(
           "../../../lib/printful"
         );
 
@@ -189,13 +189,12 @@ export async function PATCH(req: NextRequest) {
           email: updated.email,
         };
 
-        // TODO: Replace with actual FT can cooler design file URL
-        const designUrl =
-          "https://paddys-homecoming.vercel.app/assets/ft-can-cooler-design.png";
+        // Use the product key from the redemption (defaults to canCooler)
+        const productKey = (updated.product || "canCooler") as keyof typeof MERCH_PRODUCTS;
 
-        const draftOrder = await createCanCoolerOrder(
+        const draftOrder = await createMerchOrder(
+          productKey,
           recipient,
-          designUrl,
           `merch-${updated.id}`
         );
 

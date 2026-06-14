@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                           </div>
                           <p className="text-white/50 text-xs">{r.email}</p>
                           <p className="text-white/40 text-xs mt-1">
-                            Store: {r.store} | Receipt: {r.receiptFilename}
+                            Product: <span className="text-white/60 font-medium">{r.product || "canCooler"}</span> | Store: {r.store} | Receipt: {r.receiptFilename}
                           </p>
                           <p className="text-white/40 text-xs">
                             Ship to: {r.shippingName}, {r.shippingAddress1}{r.shippingAddress2 ? `, ${r.shippingAddress2}` : ""}, {r.shippingCity}, {r.shippingState} {r.shippingZip}

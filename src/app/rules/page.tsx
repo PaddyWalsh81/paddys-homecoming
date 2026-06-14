@@ -12,8 +12,8 @@ const CAMPAIGN = {
   drawDate: "January 15, 2027",
   winnerNotifyDays: 5,
   responseDays: 7,
-  prize: "two (2) round-trip economy class airline tickets from a major U.S. gateway airport to Dublin, Ireland",
-  prizeARV: "$1,000",
+  prize: "a stay at Larch Grove, the home of Flying Tumbler in County Carlow, Ireland, for two (2) people, including: (a) two (2) round-trip economy class airline tickets from a major U.S. gateway airport to Dublin, Ireland; (b) accommodation at Larch Grove farmhouse; (c) an immersive whiskey tasting experience at the bonded warehouse at Larch Grove; and (d) one (1) night's accommodation at the Lord Bagenal Hotel, Leighlinbridge, County Carlow",
+  prizeARV: "$1,500",
   amoeEmail: "paddyshomecoming@flyingtumbler.com",
   amoeSubject: "Paddy's Homecoming Entry",
   sponsor: "MHW, Ltd. d/b/a Flying Tumbler",
@@ -216,13 +216,16 @@ export default function RulesPage() {
                 Approximate Retail Value (&ldquo;ARV&rdquo;): {CAMPAIGN.prizeARV}.
               </p>
               <p className="mt-2">
-                Prize details, including airline, travel dates, and departure city, are at the
-                sole discretion of the Sponsor. Travel must be completed within twelve (12) months
-                of the date the winner is notified. The winner and their travel companion must
+                Prize details, including airline, travel dates, departure city, and specific
+                dates of the Larch Grove stay, are at the sole discretion of the Sponsor and
+                subject to availability. Travel must be completed within twelve (12) months of
+                the date the winner is notified. The winner and their travel companion must
                 travel on the same itinerary. The travel companion must be twenty-one (21) years
                 of age or older at the time of travel. The prize does not include ground
-                transportation, meals, accommodation, travel insurance, passport or visa fees,
-                personal expenses, or any other costs not explicitly stated herein.
+                transportation (including car hire), meals (other than any included as part of the
+                Lord Bagenal Hotel accommodation), additional accommodation beyond what is
+                specified, travel insurance, passport or visa fees, personal expenses, excursions,
+                activities, or any other costs not explicitly stated herein.
               </p>
               <p className="mt-2">
                 The prize is non-transferable, non-exchangeable, and no cash equivalent or

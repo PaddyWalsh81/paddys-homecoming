@@ -73,6 +73,7 @@ export default function Home() {
 
   /* Merch redemption */
   const [merchStep, setMerchStep] = useState<"offer" | "form" | "submitted">("offer");
+  const [selectedProduct, setSelectedProduct] = useState("canCooler");
   const [merchReceipt, setMerchReceipt] = useState<File | null>(null);
   const [merchShipName, setMerchShipName] = useState("");
   const [merchShipAddr1, setMerchShipAddr1] = useState("");
@@ -234,7 +235,7 @@ export default function Home() {
           shippingCity: merchShipCity,
           shippingState: merchShipState,
           shippingZip: merchShipZip,
-          product: "canCooler",
+          product: selectedProduct,
         }),
       });
       if (res.ok) {
@@ -249,6 +250,17 @@ export default function Home() {
       setMerchSubmitting(false);
     }
   }
+
+  /* merch product menu */
+  const merchProducts = [
+    { key: "sticker4x4", name: "Sticker", img: "/assets/merch/ft-sticker-4x4.png" },
+    { key: "canCooler", name: "Can Cooler", img: "/assets/merch/ft-can-cooler-front.png" },
+    { key: "corkCoaster", name: "Coaster", img: "/assets/merch/ft-cork-coaster.png" },
+    { key: "holoSticker", name: "Holo Sticker", img: "/assets/merch/ft-holographic-sticker-4x4.png" },
+    { key: "stickerSheet", name: "Sticker Sheet", img: "/assets/merch/ft-sticker-sheet-a5.png" },
+    { key: "notepad", name: "Notepad", img: "/assets/merch/ft-notepad-5p5x6.png" },
+  ];
+  const selectedProductData = merchProducts.find((p) => p.key === selectedProduct) || merchProducts[1];
 
   /* helper: generate month/day/year options */
   const months = Array.from({ length: 12 }, (_, i) => {
@@ -431,10 +443,10 @@ export default function Home() {
               Paddy&apos;s Homecoming
             </p>
             <h1 className="font-display text-[42px] sm:text-[48px] font-extrabold text-white leading-[0.95] tracking-[0.01em] uppercase">
-              Win 2 flights<br />to Ireland
+              Win a stay at<br />Larch Grove
             </h1>
             <p className="text-white/50 text-sm mt-3">
-              Courtesy of Flying Tumbler Irish Whiskey
+              The home of Flying Tumbler in Ireland
             </p>
           </div>
 
@@ -655,7 +667,7 @@ export default function Home() {
               {[
                 { step: "1", title: "Find The Bird", desc: "Spot Flying Tumbler at your local store, bar, or restaurant." },
                 { step: "2", title: "Scan & Enter", desc: "Scan the QR code on the POS material, or visit this page directly." },
-                { step: "3", title: "Follow Paddy Home", desc: "You're in the draw for 2 return flights to Ireland." },
+                { step: "3", title: "Follow Paddy Home", desc: "You're in the draw to win a stay at Larch Grove, the home of Flying Tumbler in Ireland." },
               ].map((item) => (
                 <div key={item.step} className="flex items-start gap-4">
                   <div
@@ -794,7 +806,7 @@ export default function Home() {
           {/* Share buttons */}
           <div className="flex gap-3">
             <a
-              href={typeof window !== "undefined" ? `sms:?body=I just entered Paddy's Homecoming to win 2 flights to Ireland! Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
+              href={typeof window !== "undefined" ? `sms:?body=I just entered Paddy's Homecoming to win a stay at the home of Flying Tumbler in Ireland! Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
               className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
               style={{ background: C.light, color: C.navy }}
             >
@@ -804,7 +816,7 @@ export default function Home() {
               SMS
             </a>
             <a
-              href={typeof window !== "undefined" ? `https://wa.me/?text=I just entered Paddy's Homecoming to win 2 flights to Ireland! Enter here: ${encodeURIComponent(window.location.origin + "?ref=" + referralCode)}` : "#"}
+              href={typeof window !== "undefined" ? `https://wa.me/?text=I just entered Paddy's Homecoming to win a stay at the home of Flying Tumbler in Ireland! Enter here: ${encodeURIComponent(window.location.origin + "?ref=" + referralCode)}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
@@ -813,7 +825,7 @@ export default function Home() {
               WhatsApp
             </a>
             <a
-              href={typeof window !== "undefined" ? `mailto:?subject=Win 2 flights to Ireland!&body=I just entered Paddy's Homecoming from Flying Tumbler. Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
+              href={typeof window !== "undefined" ? `mailto:?subject=Win a stay at Larch Grove, Ireland!&body=I just entered Paddy's Homecoming from Flying Tumbler. Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
               className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
               style={{ background: C.purple, color: "white" }}
             >
@@ -850,7 +862,7 @@ export default function Home() {
                 </div>
                 <h2 className="font-display text-xl font-bold mb-1" style={{ color: C.navy }}>Merch claimed!</h2>
                 <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                  We&apos;ll review your receipt and ship your free Flying Tumbler can cooler. Check your email for updates.
+                  We&apos;ll review your receipt and ship your free Flying Tumbler merch. Check your email for updates.
                 </p>
               </div>
             ) : merchStep === "form" ? (
@@ -867,7 +879,7 @@ export default function Home() {
                   Back
                 </button>
                 <h2 className="font-display text-lg font-bold mb-1" style={{ color: C.navy }}>
-                  Claim your free can cooler
+                  Claim your free {selectedProductData.name.toLowerCase()}
                 </h2>
                 <p className="text-xs text-gray-400 mb-4">
                   Upload a photo of your receipt showing a Flying Tumbler purchase, then enter your shipping address.
@@ -962,58 +974,95 @@ export default function Home() {
                   className="w-full h-12 rounded-lg font-semibold text-sm mt-4 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{ background: C.green, color: "white" }}
                 >
-                  {merchSubmitting ? "Submitting..." : "Claim my free can cooler"}
+                  {merchSubmitting ? "Submitting..." : `Claim my free ${selectedProductData.name.toLowerCase()}`}
                 </button>
                 <p className="text-[10px] text-gray-400 mt-2 text-center">
                   Ships in 5–11 business days. US addresses only. One per customer.
                 </p>
               </>
             ) : (
-              /* ── Offer card (initial state) ── */
+              /* ── Offer card with product selector ── */
               <>
-                <div className="flex gap-4 items-start">
-                  <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0" style={{ background: C.green + "15" }}>
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 12v10H4V12" />
-                      <rect x="2" y="7" width="20" height="5" rx="1" />
-                      <line x1="12" y1="22" x2="12" y2="7" />
-                      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" />
-                      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-display text-lg font-bold leading-snug" style={{ color: C.navy }}>
-                      Receive a free Flying Tumbler can cooler
-                    </h2>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                      Buy a bottle of The Bird today and get a branded can cooler shipped to you — on us. Just snap a photo of your receipt.
-                    </p>
-                  </div>
+                <div className="text-center mb-4">
+                  <h2 className="font-display text-lg font-bold leading-snug" style={{ color: C.navy }}>
+                    Get free Flying Tumbler merch
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1 leading-relaxed max-w-xs mx-auto">
+                    Buy a bottle of The Bird today and choose your free merch — shipped to you, on us. Just snap a photo of your receipt.
+                  </p>
                 </div>
 
-                <div className="mt-4 flex items-center gap-3 p-3 rounded-xl" style={{ background: C.light }}>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ background: C.green }} />
-                    <span className="text-xs font-medium" style={{ color: C.navy }}>No cost to you</span>
+                {/* Product grid */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {merchProducts.map((p) => (
+                    <button
+                      key={p.key}
+                      onClick={() => setSelectedProduct(p.key)}
+                      className="rounded-xl p-2 transition-all hover:scale-[1.03] active:scale-[0.97] flex flex-col items-center gap-1.5"
+                      style={{
+                        background: selectedProduct === p.key ? C.yellow + "20" : C.light,
+                        border: `2px solid ${selectedProduct === p.key ? C.yellow : "transparent"}`,
+                        boxShadow: selectedProduct === p.key ? `0 2px 12px ${C.yellow}30` : "none",
+                      }}
+                    >
+                      <div className="w-14 h-14 rounded-lg overflow-hidden flex items-center justify-center" style={{ background: "white" }}>
+                        <Image
+                          src={p.img}
+                          alt={p.name}
+                          width={52}
+                          height={52}
+                          className="object-contain"
+                          style={{ maxHeight: "52px" }}
+                        />
+                      </div>
+                      <span
+                        className="text-[10px] font-semibold leading-tight text-center"
+                        style={{ color: selectedProduct === p.key ? C.navy : "#888" }}
+                      >
+                        {p.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Selected product preview */}
+                <div className="flex items-center gap-3 p-3 rounded-xl mb-4" style={{ background: C.light }}>
+                  <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center shrink-0" style={{ background: "white" }}>
+                    <Image
+                      src={selectedProductData.img}
+                      alt={selectedProductData.name}
+                      width={44}
+                      height={44}
+                      className="object-contain"
+                    />
                   </div>
-                  <div className="w-px h-4 bg-gray-300" />
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ background: C.yellow }} />
-                    <span className="text-xs font-medium" style={{ color: C.navy }}>Ships free</span>
-                  </div>
-                  <div className="w-px h-4 bg-gray-300" />
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ background: C.coral }} />
-                    <span className="text-xs font-medium" style={{ color: C.navy }}>While stocks last</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold" style={{ color: C.navy }}>
+                      You selected: <span style={{ color: C.green }}>{selectedProductData.name}</span>
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
+                        <span className="text-[10px] text-gray-500">Free</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.yellow }} />
+                        <span className="text-[10px] text-gray-500">Ships free</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: C.coral }} />
+                        <span className="text-[10px] text-gray-500">While stocks last</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setMerchStep("form")}
-                  className="w-full h-12 rounded-lg font-semibold text-sm mt-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-12 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
                   style={{ background: C.yellow, color: C.navy }}
                 >
-                  I bought a bottle — claim my merch
+                  I bought a bottle — claim my {selectedProductData.name.toLowerCase()}
                 </button>
               </>
             )}

@@ -5,7 +5,7 @@
  * this module creates a Printful order → Printful prints & ships
  * under FT branding (white-label).
  *
- * Lead product: Can Cooler (product 764, ~$7.78 landed)
+ * 6-product menu confirmed 14 Jun 2026 — all under $11 landed.
  */
 
 const PRINTFUL_BASE = "https://api.printful.com/v2";
@@ -45,21 +45,109 @@ export interface PrintfulOrder {
   estimated_fulfillment: string;
 }
 
-/* ── Can Cooler product config ── */
+/* ── Product key type (used throughout the app) ── */
 
-export const MERCH_PRODUCTS = {
-  canCooler: {
-    name: "Flying Tumbler Can Cooler",
-    catalogProductId: 764,
-    // Regular 12oz = 19461, Slim 12oz = 19462
-    defaultVariantId: 19461,
-    productCostEUR: 2.95,
-    shippingCostEUR: 4.25,
-    totalLandedEUR: 7.20,
-    description: "Branded can cooler — keeps your drink cold and your style warm.",
-    imageUrl: "/assets/merch-can-cooler.png", // placeholder until mockup generated
+export type MerchProductKey =
+  | "sticker4x4"
+  | "canCooler"
+  | "corkCoaster"
+  | "holoSticker"
+  | "stickerSheet"
+  | "notepad";
+
+/* ── Full 6-product merch menu ── */
+
+export const MERCH_PRODUCTS: Record<
+  MerchProductKey,
+  {
+    name: string;
+    shortName: string;
+    catalogProductId: number;
+    defaultVariantId: number;
+    productCostUSD: number;
+    shippingCostUSD: number;
+    landedCostUSD: number;
+    description: string;
+    imageUrl: string;
+    designUrl: string;
+    /** Can cooler has front + back designs; others use "default" only */
+    backDesignUrl?: string;
+  }
+> = {
+  sticker4x4: {
+    name: "Kiss-Cut Sticker 4×4",
+    shortName: "Sticker",
+    catalogProductId: 358,
+    defaultVariantId: 10164,
+    productCostUSD: 3.25,
+    shippingCostUSD: 4.29,
+    landedCostUSD: 7.54,
+    description: "A premium kiss-cut sticker with the Flying Tumbler bolt.",
+    imageUrl: "/assets/merch/ft-sticker-4x4.png",
+    designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-sticker-4x4.png",
   },
-} as const;
+  canCooler: {
+    name: "Can Cooler (12oz)",
+    shortName: "Can Cooler",
+    catalogProductId: 764,
+    defaultVariantId: 19461,
+    productCostUSD: 3.42,
+    shippingCostUSD: 4.50,
+    landedCostUSD: 7.92,
+    description: "Branded can cooler — keeps your drink cold and your style warm.",
+    imageUrl: "/assets/merch/ft-can-cooler-front.png",
+    designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-can-cooler-front.png",
+    backDesignUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-can-cooler-back.png",
+  },
+  corkCoaster: {
+    name: "Cork Back Coaster",
+    shortName: "Coaster",
+    catalogProductId: 611,
+    defaultVariantId: 15662,
+    productCostUSD: 5.50,
+    shippingCostUSD: 3.99,
+    landedCostUSD: 9.49,
+    description: "Cork-backed coaster with the Flying Tumbler design.",
+    imageUrl: "/assets/merch/ft-cork-coaster.png",
+    designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-cork-coaster.png",
+  },
+  holoSticker: {
+    name: "Holographic Sticker 4×4",
+    shortName: "Holo Sticker",
+    catalogProductId: 673,
+    defaultVariantId: 16706,
+    productCostUSD: 5.25,
+    shippingCostUSD: 4.29,
+    landedCostUSD: 9.54,
+    description: "Holographic sticker that catches the light — Paddy approved.",
+    imageUrl: "/assets/merch/ft-holographic-sticker-4x4.png",
+    designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-holographic-sticker-4x4.png",
+  },
+  stickerSheet: {
+    name: "Sticker Sheet A5",
+    shortName: "Sticker Sheet",
+    catalogProductId: 505,
+    defaultVariantId: 12917,
+    productCostUSD: 6.25,
+    shippingCostUSD: 4.29,
+    landedCostUSD: 10.54,
+    description: "A5 sheet packed with Flying Tumbler stickers.",
+    imageUrl: "/assets/merch/ft-sticker-sheet-a5.png",
+    designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-sticker-sheet-a5.png",
+  },
+  notepad: {
+    name: "Notepad 5.5×6",
+    shortName: "Notepad",
+    catalogProductId: 786,
+    defaultVariantId: 19901,
+    productCostUSD: 6.63,
+    shippingCostUSD: 4.50,
+    landedCostUSD: 11.13,
+    description: "Handy notepad with the Flying Tumbler wordmark.",
+    imageUrl: "/assets/merch/ft-notepad-5p5x6.png",
+    designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-notepad-5p5x6.png",
+  },
+};
 
 /* ── helpers ── */
 
@@ -146,28 +234,46 @@ export async function getOrder(
 }
 
 /**
- * Create a Can Cooler order — the primary merch item.
- * Takes a recipient and the URL of the design file.
+ * Create an order for any merch product by key.
+ * Looks up the variant ID and design URLs from MERCH_PRODUCTS.
  */
+export async function createMerchOrder(
+  productKey: MerchProductKey,
+  recipient: PrintfulRecipient,
+  externalId?: string
+): Promise<{ id: number; status: string }> {
+  const product = MERCH_PRODUCTS[productKey];
+  if (!product) {
+    throw new Error(`Unknown product key: ${productKey}`);
+  }
+
+  const files: PrintfulOrderItem["files"] = [
+    { type: "default", url: product.designUrl },
+  ];
+
+  // Can cooler has a back design
+  if (product.backDesignUrl) {
+    files.push({ type: "back", url: product.backDesignUrl });
+  }
+
+  const items: PrintfulOrderItem[] = [
+    {
+      catalog_variant_id: product.defaultVariantId,
+      quantity: 1,
+      files,
+    },
+  ];
+
+  return createDraftOrder(recipient, items, externalId);
+}
+
+/** @deprecated Use createMerchOrder("canCooler", ...) instead */
 export async function createCanCoolerOrder(
   recipient: PrintfulRecipient,
   designFileUrl: string,
   externalId?: string
 ): Promise<{ id: number; status: string }> {
-  const items: PrintfulOrderItem[] = [
-    {
-      catalog_variant_id: MERCH_PRODUCTS.canCooler.defaultVariantId,
-      quantity: 1,
-      files: [
-        {
-          type: "default",
-          url: designFileUrl,
-        },
-      ],
-    },
-  ];
-
-  return createDraftOrder(recipient, items, externalId);
+  return createMerchOrder("canCooler", recipient, externalId);
 }
 
 /**
