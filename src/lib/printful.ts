@@ -14,13 +14,24 @@ const STORE_ID = "4438695"; // Flying Tumbler Printful store
 
 /* ── types ── */
 
+/** V2 placement layer — references an image URL for a print area */
+export interface PrintfulPlacementLayer {
+  type: "file";
+  url: string;
+}
+
+/** V2 placement — defines where and how art is printed */
+export interface PrintfulPlacement {
+  placement: string;
+  technique: string;
+  layers: PrintfulPlacementLayer[];
+}
+
+/** V2 order item — uses placements instead of files */
 export interface PrintfulOrderItem {
   catalog_variant_id: number;
   quantity: number;
-  files: {
-    type: "default" | "back" | "label_inside" | "label_outside";
-    url: string;
-  }[];
+  placements: PrintfulPlacement[];
 }
 
 export interface PrintfulRecipient {
@@ -72,6 +83,12 @@ export const MERCH_PRODUCTS: Record<
     designUrl: string;
     /** Can cooler has front + back designs; others use "default" only */
     backDesignUrl?: string;
+    /** V2 API: placement name (e.g. "default", "front") */
+    placement: string;
+    /** V2 API: back placement name (can cooler only) */
+    backPlacement?: string;
+    /** V2 API: printing technique (e.g. "digital", "sublimation") */
+    technique: string;
   }
 > = {
   sticker4x4: {
@@ -85,6 +102,8 @@ export const MERCH_PRODUCTS: Record<
     description: "A premium kiss-cut sticker with the Flying Tumbler bolt.",
     imageUrl: "/assets/merch/ft-sticker-4x4.png",
     designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-sticker-4x4.png",
+    placement: "default",
+    technique: "digital",
   },
   canCooler: {
     name: "Can Cooler (12oz)",
@@ -98,6 +117,9 @@ export const MERCH_PRODUCTS: Record<
     imageUrl: "/assets/merch/ft-can-cooler-front.png",
     designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-can-cooler-front.png",
     backDesignUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-can-cooler-back.png",
+    placement: "front",
+    backPlacement: "back",
+    technique: "sublimation",
   },
   corkCoaster: {
     name: "Cork Back Coaster",
@@ -110,6 +132,8 @@ export const MERCH_PRODUCTS: Record<
     description: "Cork-backed coaster with the Flying Tumbler design.",
     imageUrl: "/assets/merch/ft-cork-coaster.png",
     designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-cork-coaster.png",
+    placement: "default",
+    technique: "sublimation",
   },
   holoSticker: {
     name: "Holographic Sticker 4×4",
@@ -122,6 +146,8 @@ export const MERCH_PRODUCTS: Record<
     description: "Holographic sticker that catches the light — Paddy approved.",
     imageUrl: "/assets/merch/ft-holographic-sticker-4x4.png",
     designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-holographic-sticker-4x4.png",
+    placement: "default",
+    technique: "digital",
   },
   stickerSheet: {
     name: "Sticker Sheet A5",
@@ -134,6 +160,8 @@ export const MERCH_PRODUCTS: Record<
     description: "A5 sheet packed with Flying Tumbler stickers.",
     imageUrl: "/assets/merch/ft-sticker-sheet-a5.png",
     designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-sticker-sheet-a5.png",
+    placement: "default",
+    technique: "digital",
   },
   notepad: {
     name: "Notepad 5.5×6",
@@ -146,6 +174,8 @@ export const MERCH_PRODUCTS: Record<
     description: "Handy notepad with the Flying Tumbler wordmark.",
     imageUrl: "/assets/merch/ft-notepad-5p5x6.png",
     designUrl: "https://paddys-homecoming.vercel.app/assets/merch/ft-notepad-5p5x6.png",
+    placement: "default",
+    technique: "digital",
   },
 };
 
@@ -179,7 +209,7 @@ async function printfulFetch(
 /* ── API functions ── */
 
 /**
- * Create a draft order in Printful.
+ * Create a draft order in Printful (v2 API — uses placements).
  * Draft orders need to be confirmed before they enter production.
  */
 export async function createDraftOrder(
@@ -193,7 +223,7 @@ export async function createDraftOrder(
       source: "catalog",
       catalog_variant_id: item.catalog_variant_id,
       quantity: item.quantity,
-      files: item.files,
+      placements: item.placements,
     })),
     ...(externalId ? { external_id: externalId } : {}),
   };
@@ -235,7 +265,8 @@ export async function getOrder(
 
 /**
  * Create an order for any merch product by key.
- * Looks up the variant ID and design URLs from MERCH_PRODUCTS.
+ * Looks up the variant ID, placements, and design URLs from MERCH_PRODUCTS.
+ * Uses v2 API placements format with correct technique per product.
  */
 export async function createMerchOrder(
   productKey: MerchProductKey,
@@ -247,20 +278,28 @@ export async function createMerchOrder(
     throw new Error(`Unknown product key: ${productKey}`);
   }
 
-  const files: PrintfulOrderItem["files"] = [
-    { type: "default", url: product.designUrl },
+  const placements: PrintfulPlacement[] = [
+    {
+      placement: product.placement,
+      technique: product.technique,
+      layers: [{ type: "file", url: product.designUrl }],
+    },
   ];
 
-  // Can cooler has a back design
-  if (product.backDesignUrl) {
-    files.push({ type: "back", url: product.backDesignUrl });
+  // Can cooler has a back design on a separate placement
+  if (product.backDesignUrl && product.backPlacement) {
+    placements.push({
+      placement: product.backPlacement,
+      technique: product.technique,
+      layers: [{ type: "file", url: product.backDesignUrl }],
+    });
   }
 
   const items: PrintfulOrderItem[] = [
     {
       catalog_variant_id: product.defaultVariantId,
       quantity: 1,
-      files,
+      placements,
     },
   ];
 
@@ -277,7 +316,7 @@ export async function createCanCoolerOrder(
 }
 
 /**
- * Get estimated shipping rates for a recipient.
+ * Get estimated shipping rates for a recipient (v2 API).
  */
 export async function getShippingRates(
   recipient: PrintfulRecipient,
@@ -289,7 +328,7 @@ export async function getShippingRates(
       state_code: recipient.state_code,
       zip: recipient.zip,
     },
-    items: items.map((item) => ({
+    order_items: items.map((item) => ({
       source: "catalog",
       catalog_variant_id: item.catalog_variant_id,
       quantity: item.quantity,
