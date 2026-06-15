@@ -280,44 +280,13 @@ export default function Home() {
             </p>
           </div>
 
-          {/* ── Referral card ── */}
-          <div className="rounded-2xl p-6 mb-5 fade-in-delay-1" style={{ background: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
-            <h2 className="font-display text-xl font-bold mb-2" style={{ color: C.navy }}>Share for bonus entries</h2>
-            <p className="text-sm text-gray-500 mb-4">Share your link with friends. When a friend enters, you both get a bonus entry.</p>
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1 h-12 px-4 rounded-lg border border-gray-200 text-sm flex items-center overflow-hidden font-mono" style={{ background: C.light, color: C.navy }}>
-                <span className="truncate">{typeof window !== "undefined" ? `${window.location.origin}?ref=${referralCode}` : ""}</span>
-              </div>
-              <button onClick={copyReferral} className="h-12 px-5 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0" style={{ background: C.green, color: "white" }}>
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-            <div className="flex gap-3">
-              <a href={typeof window !== "undefined" ? `sms:?body=I just entered Paddy's Homecoming to win a stay at Larch Grove in Ireland! Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
-                className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]" style={{ background: C.light, color: C.navy }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
-                SMS
-              </a>
-              <a href={typeof window !== "undefined" ? `https://wa.me/?text=I just entered Paddy's Homecoming to win a stay at Larch Grove in Ireland! Enter here: ${encodeURIComponent(window.location.origin + "?ref=" + referralCode)}` : "#"}
-                target="_blank" rel="noopener noreferrer"
-                className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]" style={{ background: "#25D366", color: "white" }}>
-                WhatsApp
-              </a>
-              <a href={typeof window !== "undefined" ? `mailto:?subject=Win a stay at Larch Grove, Ireland!&body=I just entered Paddy's Homecoming from Flying Tumbler. Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
-                className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]" style={{ background: C.purple, color: "white" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-                Email
-              </a>
-            </div>
-          </div>
-
-          {/* ── MERCH OFFER card ── */}
+          {/* ── MERCH / GWP OFFER card ── */}
           <div className="rounded-2xl overflow-hidden mb-5 fade-in-delay-1" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.2)", border: `2px solid ${C.yellow}40` }}>
             <div className="px-5 py-2 flex items-center gap-2" style={{ background: C.navy }}>
               <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full" style={{ background: C.yellow, color: C.navy }}>Separate offer</span>
               <span className="text-white/50 text-[10px] tracking-wide uppercase">Gift with purchase</span>
             </div>
-            <div className="p-6" style={{ background: "white" }}>
+            <div className="p-5" style={{ background: "white" }}>
               {merchStep === "submitted" ? (
                 <div className="text-center py-4">
                   <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: C.green + "20" }}>
@@ -367,28 +336,51 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <div className="text-center mb-4">
-                    <h2 className="font-display text-lg font-bold leading-snug" style={{ color: C.navy }}>Get free Flying Tumbler merch</h2>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed max-w-xs mx-auto">Buy a bottle of The Bird today and choose your free merch — shipped to you, on us.</p>
+                  {/* Bottle hero */}
+                  <div className="flex items-center justify-center gap-4 pt-2 pb-4">
+                    <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={80} height={200} className="h-[140px] w-auto object-contain" />
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-display text-[22px] font-extrabold leading-tight" style={{ color: C.navy }}>Buy The Bird,<br />get free merch</h2>
+                      <p className="text-[13px] text-gray-500 mt-2 leading-relaxed">Pick up a bottle of Flying Tumbler, snap your receipt, and we&apos;ll ship you free branded merch. On us.</p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
+
+                  {/* How it works steps */}
+                  <div className="flex gap-2 mb-5">
+                    {[
+                      { n: "1", label: "Buy a bottle", icon: "🥃" },
+                      { n: "2", label: "Snap receipt", icon: "📸" },
+                      { n: "3", label: "Pick your merch", icon: "🎁" },
+                    ].map((step) => (
+                      <div key={step.n} className="flex-1 rounded-xl p-3 text-center" style={{ background: C.light }}>
+                        <div className="text-lg mb-1">{step.icon}</div>
+                        <p className="text-[11px] font-bold" style={{ color: C.navy }}>{step.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Product selector — larger images, 2 cols */}
+                  <p className="text-[11px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: C.purple }}>Choose your free item</p>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
                     {MERCH_PRODUCTS.map((p) => (
                       <button key={p.key} onClick={() => setSelectedProduct(p.key)}
-                        className="rounded-xl p-2 transition-all hover:scale-[1.03] active:scale-[0.97] flex flex-col items-center gap-1.5"
-                        style={{ background: selectedProduct === p.key ? C.yellow + "20" : C.light, border: `2px solid ${selectedProduct === p.key ? C.yellow : "transparent"}`, boxShadow: selectedProduct === p.key ? `0 2px 12px ${C.yellow}30` : "none" }}>
-                        <div className="w-14 h-14 rounded-lg overflow-hidden flex items-center justify-center" style={{ background: "white" }}>
-                          <Image src={p.img} alt={p.name} width={52} height={52} className="object-contain" style={{ maxHeight: "52px" }} />
+                        className="rounded-xl p-3 transition-all hover:scale-[1.02] active:scale-[0.97] flex flex-col items-center gap-2"
+                        style={{ background: selectedProduct === p.key ? C.yellow + "18" : C.light, border: `2px solid ${selectedProduct === p.key ? C.yellow : "transparent"}`, boxShadow: selectedProduct === p.key ? `0 4px 16px ${C.yellow}25` : "none" }}>
+                        <div className="w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center" style={{ background: "white" }}>
+                          <Image src={p.img} alt={p.name} width={160} height={160} className="object-contain w-full h-full p-1" />
                         </div>
-                        <span className="text-[10px] font-semibold leading-tight text-center" style={{ color: selectedProduct === p.key ? C.navy : "#888" }}>{p.name}</span>
+                        <span className="text-[12px] font-semibold leading-tight text-center" style={{ color: selectedProduct === p.key ? C.navy : "#777" }}>{p.name}</span>
                       </button>
                     ))}
                   </div>
+
+                  {/* Selected product confirmation */}
                   <div className="flex items-center gap-3 p-3 rounded-xl mb-4" style={{ background: C.light }}>
-                    <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center shrink-0" style={{ background: "white" }}>
-                      <Image src={selectedProductData.img} alt={selectedProductData.name} width={44} height={44} className="object-contain" />
+                    <div className="w-14 h-14 rounded-lg overflow-hidden flex items-center justify-center shrink-0" style={{ background: "white" }}>
+                      <Image src={selectedProductData.img} alt={selectedProductData.name} width={52} height={52} className="object-contain" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold" style={{ color: C.navy }}>You selected: <span style={{ color: C.green }}>{selectedProductData.name}</span></p>
+                      <p className="text-sm font-semibold" style={{ color: C.navy }}>Your pick: <span style={{ color: C.green }}>{selectedProductData.name}</span></p>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: C.green }} /><span className="text-[10px] text-gray-500">Free</span></div>
                         <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: C.yellow }} /><span className="text-[10px] text-gray-500">Ships free</span></div>
@@ -401,6 +393,37 @@ export default function Home() {
                   </button>
                 </>
               )}
+            </div>
+          </div>
+
+          {/* ── Share with your mates ── */}
+          <div className="rounded-2xl p-6 mb-5 fade-in-delay-2" style={{ background: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+            <h2 className="font-display text-xl font-bold mb-2" style={{ color: C.navy }}>Share with your mates</h2>
+            <p className="text-sm text-gray-500 mb-4">Share your link with friends. When a friend enters, you both get a bonus entry.</p>
+            <div className="flex gap-2 mb-4">
+              <div className="flex-1 h-12 px-4 rounded-lg border border-gray-200 text-sm flex items-center overflow-hidden font-mono" style={{ background: C.light, color: C.navy }}>
+                <span className="truncate">{typeof window !== "undefined" ? `${window.location.origin}?ref=${referralCode}` : ""}</span>
+              </div>
+              <button onClick={copyReferral} className="h-12 px-5 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0" style={{ background: C.green, color: "white" }}>
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <div className="flex gap-3">
+              <a href={typeof window !== "undefined" ? `sms:?body=I just entered Paddy's Homecoming to win a stay at Larch Grove in Ireland! Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
+                className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]" style={{ background: C.light, color: C.navy }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+                SMS
+              </a>
+              <a href={typeof window !== "undefined" ? `https://wa.me/?text=I just entered Paddy's Homecoming to win a stay at Larch Grove in Ireland! Enter here: ${encodeURIComponent(window.location.origin + "?ref=" + referralCode)}` : "#"}
+                target="_blank" rel="noopener noreferrer"
+                className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]" style={{ background: "#25D366", color: "white" }}>
+                WhatsApp
+              </a>
+              <a href={typeof window !== "undefined" ? `mailto:?subject=Win a stay at Larch Grove, Ireland!&body=I just entered Paddy's Homecoming from Flying Tumbler. Enter here: ${window.location.origin}?ref=${referralCode}` : "#"}
+                className="flex-1 h-11 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]" style={{ background: C.purple, color: "white" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                Email
+              </a>
             </div>
           </div>
 
