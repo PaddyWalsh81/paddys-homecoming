@@ -253,12 +253,12 @@ export default function Home() {
 
   /* merch product menu */
   const merchProducts = [
-    { key: "sticker4x4", name: "Sticker", img: "/assets/merch/ft-sticker-4x4.png" },
-    { key: "canCooler", name: "Can Cooler", img: "/assets/merch/ft-can-cooler-front.png" },
-    { key: "corkCoaster", name: "Coaster", img: "/assets/merch/ft-cork-coaster.png" },
-    { key: "holoSticker", name: "Holo Sticker", img: "/assets/merch/ft-holographic-sticker-4x4.png" },
-    { key: "stickerSheet", name: "Sticker Sheet", img: "/assets/merch/ft-sticker-sheet-a5.png" },
-    { key: "notepad", name: "Notepad", img: "/assets/merch/ft-notepad-5p5x6.png" },
+    { key: "sticker4x4", name: "Sticker", img: "/assets/lifestyle/lifestyle-sticker.jpg" },
+    { key: "canCooler", name: "Can Cooler", img: "/assets/lifestyle/lifestyle-cooler.jpg" },
+    { key: "corkCoaster", name: "Coaster", img: "/assets/lifestyle/lifestyle-coaster.jpg" },
+    { key: "holoSticker", name: "Holo Sticker", img: "/assets/lifestyle/lifestyle-holo.jpg" },
+    { key: "stickerSheet", name: "Sticker Sheet", img: "/assets/lifestyle/lifestyle-sheet.jpg" },
+    { key: "notepad", name: "Notepad", img: "/assets/lifestyle/lifestyle-notepad.jpg" },
   ];
   const selectedProductData = merchProducts.find((p) => p.key === selectedProduct) || merchProducts[1];
 
