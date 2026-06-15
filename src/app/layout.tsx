@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Paddy's Homecoming | Win 2 Flights to Ireland",
-  description: "Follow Paddy Home. Enter for a chance to win 2 return flights to Ireland, courtesy of Flying Tumbler Irish Whiskey. No purchase necessary.",
+  title: "Paddy's Homecoming | Win a Stay at Larch Grove, Ireland",
+  description: "Follow Paddy Home. Enter for a chance to win a trip to Larch Grove — the home of Flying Tumbler in Carlow, Ireland. No purchase necessary.",
   openGraph: {
-    title: "Paddy's Homecoming | Win 2 Flights to Ireland",
-    description: "Follow Paddy Home. Enter for a chance to win 2 return flights to Ireland.",
+    title: "Paddy's Homecoming | Win a Stay at Larch Grove, Ireland",
+    description: "Follow Paddy Home. Enter for a chance to win a trip to Larch Grove, Ireland.",
     type: "website",
   },
 };
