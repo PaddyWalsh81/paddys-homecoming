@@ -485,7 +485,7 @@ export default function Home() {
           ═══════════════════════════════════════════════════════════════ */}
       <section className="relative" style={{ background: C.deepDark }}>
         {/* Hero image zone */}
-        <div className="relative" style={{ minHeight: 520 }}>
+        <div className="relative min-h-[520px] lg:min-h-[620px]">
           {/* Background photo */}
           <Image
             src="/assets/carlow-fields-mountains.jpg"
@@ -517,25 +517,25 @@ export default function Home() {
           />
 
           {/* Hero text content */}
-          <div className="relative z-10 mt-auto px-6 pb-7 pt-[260px] flex flex-col gap-3">
-            <p className="text-[11px] font-bold tracking-[0.22em] uppercase" style={{ color: C.yellow }}>Paddy&apos;s Homecoming</p>
-            <h1 className="font-display font-extrabold text-[38px] sm:text-[41px] leading-[0.98] tracking-[0.015em] uppercase text-white" style={{ textShadow: "0 2px 24px rgba(20,14,28,.5)" }}>
+          <div className="relative z-10 mt-auto px-6 pb-7 pt-[260px] lg:pt-[320px] flex flex-col gap-3 lg:items-center lg:text-center lg:max-w-3xl lg:mx-auto">
+            <p className="text-[11px] lg:text-[13px] font-bold tracking-[0.22em] uppercase" style={{ color: C.yellow }}>Paddy&apos;s Homecoming</p>
+            <h1 className="font-display font-extrabold text-[38px] sm:text-[41px] lg:text-[56px] leading-[0.98] tracking-[0.015em] uppercase text-white" style={{ textShadow: "0 2px 24px rgba(20,14,28,.5)" }}>
               Win a trip to<br />Larch Grove
             </h1>
-            <p className="text-[15.5px] leading-relaxed text-white/90 max-w-sm">
+            <p className="text-[15.5px] lg:text-[18px] leading-relaxed text-white/90 max-w-sm lg:max-w-lg">
               The home of Flying Tumbler in Ireland. Paddy&apos;s flown back to the farm in Carlow &mdash; and he&apos;s saved you a seat.
             </p>
-            <div className="self-start rounded-lg px-3.5 py-2.5 mt-1" style={{ background: C.yellow, color: C.purple }}>
-              <span className="text-[11.5px] font-bold tracking-[0.05em] uppercase">A stay at the farm &middot; whiskey at the bond &middot; a night at the Lord Bagenal</span>
+            <div className="self-start lg:self-center rounded-lg px-3.5 py-2.5 mt-1" style={{ background: C.yellow, color: C.purple }}>
+              <span className="text-[11.5px] lg:text-[13px] font-bold tracking-[0.05em] uppercase">A stay at the farm &middot; whiskey at the bond &middot; a night at the Lord Bagenal</span>
             </div>
           </div>
         </div>
 
         {/* ── Form zone ── */}
-        <div className="relative px-4 pb-6 pt-1" style={{ background: C.deepDark }}>
+        <div className="relative px-4 pb-6 pt-1 lg:max-w-2xl lg:mx-auto" style={{ background: C.deepDark }}>
           <form
             onSubmit={submitEntry}
-            className="rounded-[18px] p-4 sm:p-5 flex flex-col gap-2.5 fade-in"
+            className="rounded-[18px] p-4 sm:p-5 lg:p-7 flex flex-col gap-2.5 lg:gap-3 fade-in"
             style={{ background: "#FFFFFF", boxShadow: "0 16px 36px rgba(20,14,28,.4)", marginTop: -2 }}
           >
             <p className="text-[11px] font-bold tracking-[0.18em] uppercase" style={{ color: C.purple }}>Enter the draw</p>
@@ -655,24 +655,24 @@ export default function Home() {
       <section style={{ background: C.warmPaper }}>
 
         {/* ── Intro panel ── */}
-        <div className="relative overflow-hidden px-6 pt-9 pb-8" style={{ background: C.purple }}>
+        <div className="relative overflow-hidden px-6 lg:px-12 pt-9 pb-8 lg:pt-14 lg:pb-12 lg:text-center" style={{ background: C.purple }}>
           <Image src="/assets/cloud-gold-1.png" alt="" width={150} height={75} className="absolute -top-5 -right-8 opacity-40 pointer-events-none" />
-          <p className="relative text-[11px] font-bold tracking-[0.22em] uppercase" style={{ color: C.yellow }}>The prize</p>
-          <h2 className="relative font-display font-extrabold text-[30px] sm:text-[32px] leading-[1.02] tracking-[0.015em] uppercase text-white mt-3">
+          <p className="relative text-[11px] lg:text-[13px] font-bold tracking-[0.22em] uppercase" style={{ color: C.yellow }}>The prize</p>
+          <h2 className="relative font-display font-extrabold text-[30px] sm:text-[32px] lg:text-[44px] leading-[1.02] tracking-[0.015em] uppercase text-white mt-3">
             This is where it all began
           </h2>
-          <p className="relative text-[15px] leading-relaxed text-white/85 mt-3 max-w-lg">
+          <p className="relative text-[15px] lg:text-[17px] leading-relaxed text-white/85 mt-3 max-w-lg lg:max-w-2xl lg:mx-auto">
             This is where Paddy&apos;s coming home to. The farm in Carlow where Flying Tumbler was born &mdash; and you could be there, glass in hand, by the fire.
           </p>
-          <div className="relative flex flex-wrap gap-2 mt-5">
+          <div className="relative flex flex-wrap gap-2 mt-5 lg:justify-center">
             {["Flights for two", "2 nights at the farmhouse", "A tasting in the bond", "A night at the Lord Bagenal"].map((t) => (
-              <span key={t} className="rounded-full px-3.5 py-1.5 text-[11.5px] font-semibold text-white" style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)" }}>{t}</span>
+              <span key={t} className="rounded-full px-3.5 py-1.5 text-[11.5px] lg:text-[13px] font-semibold text-white" style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)" }}>{t}</span>
             ))}
           </div>
         </div>
 
         {/* ── Editorial cards ── */}
-        <div className="px-4 sm:px-5 pt-6 pb-2 flex flex-col gap-5 max-w-lg mx-auto">
+        <div className="px-4 sm:px-5 pt-6 pb-2 flex flex-col gap-5 max-w-lg lg:max-w-4xl mx-auto lg:grid lg:grid-cols-2 lg:gap-6">
           {PRIZE_CARDS.map((card) => (
             <div key={card.num} className="rounded-t-[28px] rounded-b-2xl overflow-hidden" style={{ background: "#FFFFFF", boxShadow: "0 8px 22px rgba(40,28,46,.1)", border: `1px solid ${C.warmBorderLight}` }}>
               <div className="rounded-t-[28px] overflow-hidden h-[212px] relative">
@@ -698,13 +698,13 @@ export default function Home() {
 
         {/* ── Craic nearby ── */}
         <div className="pt-4 pb-1.5">
-          <div className="px-5 flex flex-col gap-1">
-            <p className="text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: C.gold }}>And the craic nearby</p>
-            <h2 className="font-display font-extrabold text-[21px] tracking-[0.015em] uppercase" style={{ color: C.purple }}>Make a week of it</h2>
+          <div className="px-5 flex flex-col gap-1 lg:text-center lg:items-center">
+            <p className="text-[11px] lg:text-[13px] font-bold tracking-[0.2em] uppercase" style={{ color: C.gold }}>And the craic nearby</p>
+            <h2 className="font-display font-extrabold text-[21px] lg:text-[30px] tracking-[0.015em] uppercase" style={{ color: C.purple }}>Make a week of it</h2>
           </div>
-          <div className="craic-row flex gap-3 overflow-x-auto px-5 pt-3.5 pb-5" style={{ scrollSnapType: "x mandatory" }}>
+          <div className="craic-row flex gap-3 lg:gap-5 overflow-x-auto px-5 pt-3.5 pb-5 lg:justify-center" style={{ scrollSnapType: "x mandatory" }}>
             {CRAIC_ITEMS.map((item) => (
-              <div key={item.title} className="flex-shrink-0 w-[154px]" style={{ scrollSnapAlign: "start" }}>
+              <div key={item.title} className="flex-shrink-0 w-[154px] lg:w-[190px]" style={{ scrollSnapAlign: "start" }}>
                 <div className="rounded-xl overflow-hidden h-[112px] relative">
                   <Image src={item.img} alt={item.title} fill className="object-cover" />
                 </div>
@@ -716,16 +716,16 @@ export default function Home() {
         </div>
 
         {/* ── Closer CTA ── */}
-        <div className="relative flex flex-col gap-3 items-center text-center px-6 py-7" style={{ background: C.green }}>
-          <Image src="/assets/paddy-flying.png" alt="Paddy the Pigeon" width={100} height={64} className="h-16 w-auto" />
-          <h2 className="font-display font-extrabold text-[25px] leading-[1.05] tracking-[0.015em] uppercase" style={{ color: "#1d3b29" }}>
+        <div className="relative flex flex-col gap-3 lg:gap-4 items-center text-center px-6 py-7 lg:py-12" style={{ background: C.green }}>
+          <Image src="/assets/paddy-flying.png" alt="Paddy the Pigeon" width={100} height={64} className="h-16 lg:h-20 w-auto" />
+          <h2 className="font-display font-extrabold text-[25px] lg:text-[36px] leading-[1.05] tracking-[0.015em] uppercase" style={{ color: "#1d3b29" }}>
             This is where you&apos;re going
           </h2>
-          <p className="text-[14px] leading-relaxed max-w-[32ch]" style={{ color: "#234a35" }}>
+          <p className="text-[14px] lg:text-[17px] leading-relaxed max-w-[32ch] lg:max-w-lg" style={{ color: "#234a35" }}>
             Scan, enter, and you could be the one Paddy brings home. Drawn 31 December 2026.
           </p>
           <button onClick={scrollToForm}
-            className="rounded-[10px] px-6 py-3.5 font-display font-extrabold text-[15px] tracking-[0.05em] uppercase text-white transition-all hover:scale-[1.02] active:scale-[0.98] mt-0.5"
+            className="rounded-[10px] px-6 lg:px-8 py-3.5 lg:py-4 font-display font-extrabold text-[15px] lg:text-[17px] tracking-[0.05em] uppercase text-white transition-all hover:scale-[1.02] active:scale-[0.98] mt-0.5"
             style={{ background: C.purple }}>
             Enter to win
           </button>
