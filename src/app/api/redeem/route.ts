@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
       shippingCity,
       shippingState,
       shippingZip,
+      phone,
+      purchaseStore,
+      purchaseState,
       product,
     } = body;
 
@@ -79,6 +82,9 @@ export async function POST(req: NextRequest) {
       shippingCity,
       shippingState,
       shippingZip,
+      phone: phone || "",
+      purchaseStore: purchaseStore || "",
+      purchaseState: purchaseState || "",
       product: product || "canCooler",
     });
 

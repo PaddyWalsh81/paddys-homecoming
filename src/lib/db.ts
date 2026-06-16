@@ -77,6 +77,12 @@ export interface MerchRedemption {
   shippingCity: string;
   shippingState: string;
   shippingZip: string;
+  /** Phone number */
+  phone: string;
+  /** Store where product was purchased (for reorder intelligence) */
+  purchaseStore: string;
+  /** State of purchase store */
+  purchaseState: string;
   /** Product selected */
   product: string;
   /** Status: pending → approved → fulfilled / rejected */
@@ -372,6 +378,9 @@ export async function addMerchRedemption(data: {
   shippingCity: string;
   shippingState: string;
   shippingZip: string;
+  phone?: string;
+  purchaseStore?: string;
+  purchaseState?: string;
   product: string;
 }): Promise<{ redemption: MerchRedemption; isNew: boolean }> {
   // Check for existing redemption by email (one per consumer)
@@ -398,6 +407,9 @@ export async function addMerchRedemption(data: {
     shippingCity: data.shippingCity,
     shippingState: data.shippingState,
     shippingZip: data.shippingZip,
+    phone: data.phone || "",
+    purchaseStore: data.purchaseStore || data.store || "",
+    purchaseState: data.purchaseState || data.state || "",
     product: data.product,
     status: "pending",
     printfulOrderId: null,
