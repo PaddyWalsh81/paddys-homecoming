@@ -103,21 +103,24 @@ async function sendViaWebhook(subject: string, html: string): Promise<void> {
     return;
   }
 
-  try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: NOTIFY_TO,
-        subject,
-        html,
-      }),
-    });
-    if (!res.ok) {
-      console.error(`[Notify] Webhook returned ${res.status}:`, await res.text().catch(() => ""));
+  // Make.com webhook expects {to_email, subject, body} — one recipient per call
+  for (const recipient of NOTIFY_TO) {
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to_email: recipient,
+          subject,
+          body: html,
+        }),
+      });
+      if (!res.ok) {
+        console.error(`[Notify] Webhook returned ${res.status} for ${recipient}:`, await res.text().catch(() => ""));
+      }
+    } catch (err) {
+      console.error(`[Notify] Webhook call failed for ${recipient}:`, err);
     }
-  } catch (err) {
-    console.error("[Notify] Webhook call failed:", err);
   }
 }
 
