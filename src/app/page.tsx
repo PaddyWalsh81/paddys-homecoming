@@ -529,6 +529,16 @@ export default function Home() {
               <span className="text-[11.5px] lg:text-[13px] font-bold tracking-[0.05em] uppercase">A stay at the farm &middot; whiskey at the bond &middot; a night at the Lord Bagenal</span>
             </div>
           </div>
+
+          {/* Bottle on right side — desktop only */}
+          <div className="hidden lg:block absolute right-[6%] bottom-[12%] z-20 pointer-events-none">
+            <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={220} height={440} className="h-[320px] w-auto drop-shadow-2xl" style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,.45))" }} />
+          </div>
+        </div>
+
+        {/* Bottle — mobile only, bridging hero and form */}
+        <div className="lg:hidden flex justify-center -mt-2 relative z-10" style={{ background: C.deepDark }}>
+          <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={140} height={280} className="h-[140px] w-auto" style={{ filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }} />
         </div>
 
         {/* ── Form zone ── */}
