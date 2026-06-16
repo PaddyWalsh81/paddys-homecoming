@@ -344,8 +344,13 @@ export default function Home() {
                     <div className="grid grid-cols-5 gap-2">
                       <input type="text" placeholder="City *" value={merchShipCity} onChange={(e) => setMerchShipCity(e.target.value)}
                         className="col-span-2 h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2" style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties} />
-                      <input type="text" placeholder="State *" value={merchShipState} onChange={(e) => setMerchShipState(e.target.value.toUpperCase().slice(0, 2))} maxLength={2}
-                        className="col-span-1 h-11 px-3 rounded-lg border text-sm text-center uppercase focus:outline-none focus:ring-2" style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties} />
+                      <select value={merchShipState} onChange={(e) => setMerchShipState(e.target.value)}
+                        className="col-span-1 h-11 px-1 rounded-lg border text-sm text-center focus:outline-none focus:ring-2 appearance-none" style={{ borderColor: "#E0E0E0", background: C.light, color: merchShipState ? C.navy : "#999", "--tw-ring-color": C.green } as React.CSSProperties}>
+                        <option value="">State</option>
+                        {["AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"].map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
                       <input type="text" placeholder="ZIP *" value={merchShipZip} onChange={(e) => setMerchShipZip(e.target.value.replace(/\D/g, "").slice(0, 5))} maxLength={5}
                         className="col-span-2 h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2" style={{ borderColor: "#E0E0E0", background: C.light, color: C.navy, "--tw-ring-color": C.green } as React.CSSProperties} />
                     </div>
@@ -353,23 +358,15 @@ export default function Home() {
                     {/* Where did you buy? — Store selector */}
                     <div className="pt-2">
                       <p className="text-xs font-semibold mb-2" style={{ color: C.navy }}>Where did you buy The Bird? *</p>
-                      {/* State filter chips */}
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {CORE_STATES.map((st) => (
-                          <button key={st.code} type="button" onClick={() => { setMerchPurchaseState(merchPurchaseState === st.code ? "" : st.code); setMerchPurchaseStore(""); setMerchStoreSearch(""); }}
-                            className="h-7 px-2.5 rounded-full text-[11px] font-semibold border transition-all"
-                            style={merchPurchaseState === st.code ? { background: C.green, color: "white", borderColor: C.green } : { background: "transparent", color: C.navy, borderColor: "#E0E0E0" }}>
-                            {st.code}
-                          </button>
+                      {/* State filter dropdown */}
+                      <select value={merchPurchaseState} onChange={(e) => { setMerchPurchaseState(e.target.value); setMerchPurchaseStore(""); setMerchStoreSearch(""); }}
+                        className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 mb-2"
+                        style={{ borderColor: merchPurchaseState ? C.green : "#E0E0E0", background: C.light, color: merchPurchaseState ? C.navy : "#999", "--tw-ring-color": C.green } as React.CSSProperties}>
+                        <option value="">All states</option>
+                        {ALL_STATES.map((st) => (
+                          <option key={st.code} value={st.code}>{st.name} ({st.code})</option>
                         ))}
-                        {OTHER_STATES.length > 0 && (
-                          <button type="button" onClick={() => { setMerchPurchaseState(""); setMerchPurchaseStore(""); setMerchStoreSearch(""); }}
-                            className="h-7 px-2.5 rounded-full text-[11px] font-semibold border transition-all"
-                            style={!merchPurchaseState ? { background: C.purple + "15", color: C.purple, borderColor: C.purple + "40" } : { background: "transparent", color: "#999", borderColor: "#E0E0E0" }}>
-                            All states
-                          </button>
-                        )}
-                      </div>
+                      </select>
                       {/* Store search + dropdown */}
                       <div ref={merchStoreRef} className="relative">
                         <input type="text" placeholder={merchPurchaseStore || "Search store name or city…"}
