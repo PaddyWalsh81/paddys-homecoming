@@ -517,15 +517,15 @@ export default function Home() {
           />
 
           {/* Hero text content */}
-          <div className="relative z-10 mt-auto px-6 pb-7 pt-[260px] lg:pt-[320px] flex flex-col gap-3 lg:items-center lg:text-center lg:max-w-3xl lg:mx-auto">
+          <div className="relative z-10 mt-auto px-6 pb-7 pt-[260px] lg:pt-[320px] flex flex-col gap-3 items-center text-center lg:max-w-3xl lg:mx-auto">
             <p className="text-[11px] lg:text-[13px] font-bold tracking-[0.22em] uppercase" style={{ color: C.yellow }}>Paddy&apos;s Homecoming</p>
             <h1 className="font-display font-extrabold text-[38px] sm:text-[41px] lg:text-[56px] leading-[0.98] tracking-[0.015em] uppercase text-white" style={{ textShadow: "0 2px 24px rgba(20,14,28,.5)" }}>
-              Win a trip to<br />Larch Grove
+              Win a trip to<br />Larch Grove, Ireland
             </h1>
             <p className="text-[15.5px] lg:text-[18px] leading-relaxed text-white/90 max-w-sm lg:max-w-lg">
               The home of Flying Tumbler in Ireland. Paddy&apos;s flown back to the farm in Carlow &mdash; and he&apos;s saved you a seat.
             </p>
-            <div className="self-start lg:self-center rounded-lg px-3.5 py-2.5 mt-1" style={{ background: C.yellow, color: C.purple }}>
+            <div className="rounded-lg px-3.5 py-2.5 mt-1" style={{ background: C.yellow, color: C.purple }}>
               <span className="text-[11.5px] lg:text-[13px] font-bold tracking-[0.05em] uppercase">A stay at the farm &middot; whiskey at the bond &middot; a night at the Lord Bagenal</span>
             </div>
           </div>
@@ -550,6 +550,7 @@ export default function Home() {
             <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="arrival-input" />
 
             {/* DOB + Zip row */}
+            <p className="text-[11px] font-semibold tracking-wide uppercase mt-1 mb-[-6px]" style={{ color: C.midPurple }}>Date of birth</p>
             <div className="flex gap-2">
               <div className="flex gap-1 flex-[1.3] min-w-0">
                 <select value={dobMonth} onChange={(e) => setDobMonth(e.target.value)} className="arrival-select flex-[1.4] min-w-0">
@@ -570,7 +571,8 @@ export default function Home() {
 
             {/* State selector */}
             <div>
-              <div className="flex flex-wrap gap-1.5 mt-1">
+              <p className="text-[11px] font-semibold tracking-wide uppercase mb-1.5" style={{ color: C.midPurple }}>Which store are you in?</p>
+              <div className="flex flex-wrap gap-1.5">
                 {CORE_STATES.map((s) => (
                   <button type="button" key={s.code}
                     onClick={() => { setSelectedState(s.code); setStore(""); setStoreSearch(""); setShowMoreStates(false); }}
