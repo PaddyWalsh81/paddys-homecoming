@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { addMerchRedemption, getAllMerchRedemptions, updateMerchRedemption } from "../../../lib/db";
+import { notifyNewClaim } from "../../../lib/notify";
 
 const ADMIN_PW = process.env.ADMIN_PASSWORD || "flyingtumbler2026";
 
@@ -64,9 +65,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Store the receipt — for MVP we store the filename reference.
-    // The actual base64 image data could be stored in KV or an external service.
-    // For now, we store a reference and the admin can view submissions.
     const filename = receiptFilename || `receipt-${Date.now()}.jpg`;
 
     const { redemption, isNew } = await addMerchRedemption({
@@ -76,6 +74,7 @@ export async function POST(req: NextRequest) {
       store: store || "",
       state: state || "",
       receiptFilename: filename,
+      receiptData: receiptBase64 || undefined,
       shippingName,
       shippingAddress1,
       shippingAddress2: shippingAddress2 || "",
@@ -97,6 +96,24 @@ export async function POST(req: NextRequest) {
         status: redemption.status,
       });
     }
+
+    // Notify Patrick + Thomas of new GWP claim (non-blocking)
+    notifyNewClaim({
+      firstName,
+      lastName: lastName || "",
+      email,
+      product: product || "canCooler",
+      purchaseStore: purchaseStore || "",
+      purchaseState: purchaseState || "",
+      shippingName,
+      shippingAddress1,
+      shippingAddress2: shippingAddress2 || "",
+      shippingCity,
+      shippingState,
+      shippingZip,
+      phone: phone || "",
+      receiptFilename: filename,
+    });
 
     return NextResponse.json({
       success: true,

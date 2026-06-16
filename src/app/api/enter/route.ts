@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addEntry } from "@/lib/db";
 import { addSweepstakesSubscriber } from "@/lib/mailchimp";
+import { notifyNewEntry } from "@/lib/notify";
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,6 +60,18 @@ export async function POST(request: NextRequest) {
       state: resolvedState,
       referralCode: result.referralCode,
     }).catch((err) => console.error("[Mailchimp] Background error:", err));
+
+    // Notify Patrick + Thomas (non-blocking)
+    notifyNewEntry({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim().toLowerCase(),
+      store: store.trim(),
+      state: resolvedState,
+      zip: zip.trim(),
+      dob,
+      referredBy: referredBy || null,
+    });
 
     return NextResponse.json({
       message: "Entry received! You're in the draw.",

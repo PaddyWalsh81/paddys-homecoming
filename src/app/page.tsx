@@ -94,6 +94,7 @@ export default function Home() {
   const [showStoreDropdown, setShowStoreDropdown] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [agreedToRules, setAgreedToRules] = useState(false);
 
   /* more-states dropdown */
   const [showMoreStates, setShowMoreStates] = useState(false);
@@ -171,6 +172,10 @@ export default function Home() {
 
     if (!firstName.trim() || !lastName.trim() || !email.trim() || !zip.trim() || !selectedState || !store) {
       setFormError("Please fill in all fields and select your state.");
+      return;
+    }
+    if (!agreedToRules) {
+      setFormError("Please accept the Official Rules to enter.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -251,12 +256,48 @@ export default function Home() {
     }
     setMerchSubmitting(true);
     try {
+      // Convert receipt to base64 (resize if > 800KB to stay under Redis 1MB limit)
+      let receiptBase64 = "";
+      try {
+        const raw = await merchReceipt.arrayBuffer();
+        const bytes = new Uint8Array(raw);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const fullB64 = btoa(binary);
+
+        if (fullB64.length > 800_000) {
+          // Resize via canvas
+          const img = document.createElement("img");
+          const url = URL.createObjectURL(merchReceipt);
+          await new Promise<void>((resolve) => { img.onload = () => resolve(); img.src = url; });
+          const canvas = document.createElement("canvas");
+          const maxDim = 1200;
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            const ratio = Math.min(maxDim / w, maxDim / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+          receiptBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+          URL.revokeObjectURL(url);
+        } else {
+          receiptBase64 = fullB64;
+        }
+      } catch {
+        // If base64 conversion fails, still submit without the image data
+        console.warn("Receipt base64 conversion failed, submitting without image data");
+      }
+
       const res = await fetch("/api/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email, firstName, lastName: "", store, state: selectedState,
           receiptFilename: merchReceipt.name,
+          receiptBase64,
           shippingName: merchShipName, shippingAddress1: merchShipAddr1,
           shippingAddress2: merchShipAddr2, shippingCity: merchShipCity,
           shippingState: merchShipState, shippingZip: merchShipZip,
@@ -723,10 +764,22 @@ export default function Home() {
               </div>
             )}
 
+            {/* T&Cs checkbox */}
+            <label className="flex items-start gap-2.5 cursor-pointer mt-1">
+              <input type="checkbox" checked={agreedToRules} onChange={(e) => setAgreedToRules(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-current flex-shrink-0" style={{ accentColor: C.green }} />
+              <span className="text-[12px] leading-relaxed" style={{ color: C.navy }}>
+                I am 21 or older, a US resident, and agree to the{" "}
+                <a href="/rules" target="_blank" className="underline font-semibold hover:opacity-70" style={{ color: C.purple }}>Official Rules</a>{" "}
+                and{" "}
+                <a href="https://www.flyingtumbler.com/privacy" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:opacity-70" style={{ color: C.purple }}>Privacy Policy</a>.
+              </span>
+            </label>
+
             {formError && <p className="text-sm text-center font-medium" style={{ color: C.coral }}>{formError}</p>}
 
             {/* CTA */}
-            <button type="submit" disabled={submitting}
+            <button type="submit" disabled={submitting || !agreedToRules}
               className="w-full rounded-[10px] py-4 text-center font-display font-extrabold text-[16px] tracking-[0.05em] uppercase transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-0.5 glow-pulse"
               style={{ background: C.green, color: C.greenDark }}>
               {submitting ? "Entering..." : "Send Paddy home"}

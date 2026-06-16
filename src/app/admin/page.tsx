@@ -42,6 +42,9 @@ interface MerchRedemption {
   shippingCity: string;
   shippingState: string;
   shippingZip: string;
+  phone: string;
+  purchaseStore: string;
+  purchaseState: string;
   product: string;
   status: "pending" | "approved" | "rejected" | "fulfilled";
   printfulOrderId: number | null;
@@ -59,6 +62,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [merchRedemptions, setMerchRedemptions] = useState<MerchRedemption[]>([]);
   const [merchTab, setMerchTab] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [receiptImages, setReceiptImages] = useState<Record<string, string>>({});
+  const [loadingReceipt, setLoadingReceipt] = useState<string | null>(null);
 
   const authHeader = useCallback(() => {
     return "Basic " + btoa("admin:" + password);
@@ -147,6 +152,21 @@ export default function AdminDashboard() {
         setMerchRedemptions(data.redemptions || []);
       }
     } catch { /* */ }
+  }
+
+  async function fetchReceiptImage(merchId: string) {
+    if (receiptImages[merchId]) return; // already loaded
+    setLoadingReceipt(merchId);
+    try {
+      const res = await fetch(`/api/receipt?pw=${encodeURIComponent(password)}&id=${merchId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.receiptData) {
+          setReceiptImages((prev) => ({ ...prev, [merchId]: data.receiptData }));
+        }
+      }
+    } catch { /* */ }
+    setLoadingReceipt(null);
   }
 
   async function handleMerchAction(id: string, action: "approve" | "reject") {
@@ -359,11 +379,32 @@ export default function AdminDashboard() {
                           </div>
                           <p className="text-white/50 text-xs">{r.email}</p>
                           <p className="text-white/40 text-xs mt-1">
-                            Product: <span className="text-white/60 font-medium">{r.product || "canCooler"}</span> | Store: {r.store} | Receipt: {r.receiptFilename}
+                            Product: <span className="text-white/60 font-medium">{r.product || "canCooler"}</span> | Purchased at: <span className="text-white/60">{r.purchaseStore || r.store}</span> ({r.purchaseState || r.state})
                           </p>
                           <p className="text-white/40 text-xs">
-                            Ship to: {r.shippingName}, {r.shippingAddress1}{r.shippingAddress2 ? `, ${r.shippingAddress2}` : ""}, {r.shippingCity}, {r.shippingState} {r.shippingZip}
+                            Phone: <span className="text-white/60">{r.phone || "—"}</span> | Ship to: {r.shippingName}, {r.shippingAddress1}{r.shippingAddress2 ? `, ${r.shippingAddress2}` : ""}, {r.shippingCity}, {r.shippingState} {r.shippingZip}
                           </p>
+                          {/* Receipt image viewer */}
+                          <div className="mt-2">
+                            {receiptImages[r.id] ? (
+                              <div className="mt-1">
+                                <img
+                                  src={`data:image/jpeg;base64,${receiptImages[r.id]}`}
+                                  alt="Receipt"
+                                  className="max-w-[280px] max-h-[360px] rounded-lg border border-white/10 object-contain"
+                                />
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => fetchReceiptImage(r.id)}
+                                disabled={loadingReceipt === r.id}
+                                className="text-[11px] font-semibold px-3 py-1 rounded-md transition-all hover:scale-[1.02]"
+                                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
+                              >
+                                {loadingReceipt === r.id ? "Loading..." : `📷 View Receipt (${r.receiptFilename})`}
+                              </button>
+                            )}
+                          </div>
                           {r.printfulOrderId && (
                             <p className="text-xs mt-1" style={{ color: C.green }}>
                               Printful Order #{r.printfulOrderId}

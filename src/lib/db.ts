@@ -372,6 +372,7 @@ export async function addMerchRedemption(data: {
   store: string;
   state: string;
   receiptFilename: string;
+  receiptData?: string;
   shippingName: string;
   shippingAddress1: string;
   shippingAddress2?: string;
@@ -424,6 +425,11 @@ export async function addMerchRedemption(data: {
   pipe.set(`merch_by_email:${data.email}`, redemption.id);
   pipe.incr("counter:merch_pending");
   await pipe.exec();
+
+  // Store receipt image data separately (can be large)
+  if (data.receiptData) {
+    await redis.set(`merch_receipt:${redemption.id}`, data.receiptData);
+  }
 
   return { redemption, isNew: true };
 }
@@ -479,6 +485,13 @@ export async function updateMerchRedemption(
   }
 
   return updated;
+}
+
+/* ── RECEIPT IMAGE ── */
+
+export async function getReceiptData(merchId: string): Promise<string | null> {
+  const data = await redis.get<string>(`merch_receipt:${merchId}`);
+  return data || null;
 }
 
 /* ── EXPORT ── */
