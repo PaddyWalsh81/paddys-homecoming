@@ -504,7 +504,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <button onClick={() => { setMerchStep("form"); if (store && !merchPurchaseStore) { setMerchPurchaseStore(store); } if (selectedState && !merchPurchaseState) { setMerchPurchaseState(selectedState); } }} className="w-full h-12 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]" style={{ background: C.yellow, color: C.navy }}>
+                  <button onClick={() => { setMerchStep("form"); if (store && !merchPurchaseStore) { setMerchPurchaseStore(store); } if (selectedState && !merchPurchaseState) { setMerchPurchaseState(selectedState); } if ((firstName || lastName) && !merchShipName) { setMerchShipName(((firstName || "") + " " + (lastName || "")).trim()); } if (zip && !merchShipZip) { setMerchShipZip(zip); } if (selectedState && !merchShipState) { setMerchShipState(selectedState); } }} className="w-full h-12 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]" style={{ background: C.yellow, color: C.navy }}>
                     I bought a bottle — claim my {selectedProductData.name.toLowerCase()}
                   </button>
                 </>
