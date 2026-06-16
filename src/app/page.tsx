@@ -267,15 +267,15 @@ export default function Home() {
           <Image src="/assets/wordmark-white.png" alt="Flying Tumbler" width={140} height={58} className="h-12 w-auto" priority />
         </header>
 
-        <div className="max-w-md mx-auto px-5 pb-12">
+        <div className="max-w-md lg:max-w-2xl mx-auto px-5 pb-12">
           {/* Hero */}
           <div className="text-center pt-2 pb-8 fade-in">
             <div className="inline-block px-5 py-2 rounded-full text-sm font-bold tracking-wide uppercase mb-4"
               style={{ background: C.yellow, color: C.navy }}>Entry confirmed</div>
-            <h1 className="font-display text-[36px] sm:text-[42px] font-extrabold text-white leading-tight">
+            <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-extrabold text-white leading-tight">
               You&apos;re in, {firstName}!
             </h1>
-            <p className="text-white/50 text-sm mt-3 max-w-xs mx-auto">
+            <p className="text-white/50 text-sm lg:text-base mt-3 max-w-xs lg:max-w-md mx-auto">
               Paddy&apos;s saving you a window seat. We&apos;ll be in touch if you&apos;re our lucky winner.
             </p>
           </div>
@@ -337,31 +337,31 @@ export default function Home() {
               ) : (
                 <>
                   {/* Bottle hero */}
-                  <div className="flex items-center justify-center gap-4 pt-2 pb-4">
-                    <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={80} height={200} className="h-[140px] w-auto object-contain" />
+                  <div className="flex items-center justify-center gap-4 lg:gap-6 pt-2 pb-4">
+                    <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={80} height={200} className="h-[140px] lg:h-[180px] w-auto object-contain" />
                     <div className="flex-1 min-w-0">
-                      <h2 className="font-display text-[22px] font-extrabold leading-tight" style={{ color: C.navy }}>Buy The Bird,<br />get free merch</h2>
-                      <p className="text-[13px] text-gray-500 mt-2 leading-relaxed">Pick up a bottle of Flying Tumbler, snap your receipt, and we&apos;ll ship you free branded merch. On us.</p>
+                      <h2 className="font-display text-[22px] lg:text-[28px] font-extrabold leading-tight" style={{ color: C.navy }}>Buy The Bird,<br />get free merch</h2>
+                      <p className="text-[13px] lg:text-[15px] text-gray-500 mt-2 leading-relaxed">Pick up a bottle of Flying Tumbler, snap your receipt, and we&apos;ll ship you free branded merch. On us.</p>
                     </div>
                   </div>
 
                   {/* How it works steps */}
-                  <div className="flex gap-2 mb-5">
+                  <div className="flex gap-2 lg:gap-3 mb-5">
                     {[
                       { n: "1", label: "Buy a bottle", icon: "🥃" },
                       { n: "2", label: "Snap receipt", icon: "📸" },
                       { n: "3", label: "Pick your merch", icon: "🎁" },
                     ].map((step) => (
-                      <div key={step.n} className="flex-1 rounded-xl p-3 text-center" style={{ background: C.light }}>
-                        <div className="text-lg mb-1">{step.icon}</div>
-                        <p className="text-[11px] font-bold" style={{ color: C.navy }}>{step.label}</p>
+                      <div key={step.n} className="flex-1 rounded-xl p-3 lg:p-4 text-center" style={{ background: C.light }}>
+                        <div className="text-lg lg:text-2xl mb-1">{step.icon}</div>
+                        <p className="text-[11px] lg:text-sm font-bold" style={{ color: C.navy }}>{step.label}</p>
                       </div>
                     ))}
                   </div>
 
-                  {/* Product selector — larger images, 2 cols */}
-                  <p className="text-[11px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: C.purple }}>Choose your free item</p>
-                  <div className="grid grid-cols-2 gap-3 mb-4">
+                  {/* Product selector — 2 cols mobile, 3 cols desktop */}
+                  <p className="text-[11px] lg:text-xs font-bold tracking-[0.12em] uppercase mb-3" style={{ color: C.purple }}>Choose your free item</p>
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
                     {MERCH_PRODUCTS.map((p) => (
                       <button key={p.key} onClick={() => setSelectedProduct(p.key)}
                         className="rounded-xl p-3 transition-all hover:scale-[1.02] active:scale-[0.97] flex flex-col items-center gap-2"
@@ -397,9 +397,9 @@ export default function Home() {
           </div>
 
           {/* ── Share with your mates ── */}
-          <div className="rounded-2xl p-6 mb-5 fade-in-delay-2" style={{ background: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
-            <h2 className="font-display text-xl font-bold mb-2" style={{ color: C.navy }}>Share with your mates</h2>
-            <p className="text-sm text-gray-500 mb-4">Share your link with friends. When a friend enters, you both get a bonus entry.</p>
+          <div className="rounded-2xl p-6 lg:p-8 mb-5 fade-in-delay-2" style={{ background: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+            <h2 className="font-display text-xl lg:text-2xl font-bold mb-2" style={{ color: C.navy }}>Share with your mates</h2>
+            <p className="text-sm lg:text-base text-gray-500 mb-4">Share your link with friends. When a friend enters, you both get a bonus entry.</p>
             <div className="flex gap-2 mb-4">
               <div className="flex-1 h-12 px-4 rounded-lg border border-gray-200 text-sm flex items-center overflow-hidden font-mono" style={{ background: C.light, color: C.navy }}>
                 <span className="truncate">{typeof window !== "undefined" ? `${window.location.origin}?ref=${referralCode}` : ""}</span>
@@ -428,9 +428,9 @@ export default function Home() {
           </div>
 
           {/* ── UGC Upload ── */}
-          <div className="rounded-2xl p-6 mb-5 fade-in-delay-2" style={{ background: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
-            <h2 className="font-display text-xl font-bold mb-1" style={{ color: C.navy }}>Snap The Bird in the wild</h2>
-            <p className="text-sm text-gray-500 mb-4">Spot The Bird at a bar, on a shelf, or in your glass? Upload a photo for a bonus entry.</p>
+          <div className="rounded-2xl p-6 lg:p-8 mb-5 fade-in-delay-2" style={{ background: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+            <h2 className="font-display text-xl lg:text-2xl font-bold mb-1" style={{ color: C.navy }}>Snap The Bird in the wild</h2>
+            <p className="text-sm lg:text-base text-gray-500 mb-4">Spot The Bird at a bar, on a shelf, or in your glass? Upload a photo for a bonus entry.</p>
             {ugcUploaded ? (
               <div className="text-center py-4">
                 <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center" style={{ background: C.green + "20" }}>
