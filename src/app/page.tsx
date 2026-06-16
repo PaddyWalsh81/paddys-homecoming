@@ -580,7 +580,7 @@ export default function Home() {
           <footer className="text-center py-8 space-y-3">
             <p className="text-white/30 text-xs max-w-md mx-auto leading-relaxed">
               NO PURCHASE NECESSARY. Must be 21+. Open to legal US residents. Ends 12/31/2026.
-              See <a href="/rules" className="underline hover:text-white/50 transition-colors">Official Rules</a>. Void where prohibited.
+              See <a href="/rules" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">Official Rules</a>. Void where prohibited.
             </p>
             <p className="text-white/20 text-xs font-mono">&copy; {new Date().getFullYear()} Flying Tumbler Irish Whiskey. Please drink responsibly.</p>
           </footer>
@@ -772,7 +772,7 @@ export default function Home() {
                 I am 21 or older, a US resident, and agree to the{" "}
                 <a href="/rules" target="_blank" className="underline font-semibold hover:opacity-70" style={{ color: C.purple }}>Official Rules</a>{" "}
                 and{" "}
-                <a href="https://www.flyingtumbler.com/privacy" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:opacity-70" style={{ color: C.purple }}>Privacy Policy</a>.
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:opacity-70" style={{ color: C.purple }}>Privacy Policy</a>.
               </span>
             </label>
 
@@ -788,7 +788,7 @@ export default function Home() {
 
           {/* Legal micro */}
           <p className="font-mono text-[9.5px] text-white/50 text-center mt-4 leading-relaxed px-4">
-            NO PURCHASE NECESSARY. 21+ US residents. Void where prohibited. See <a href="/rules" className="underline hover:text-white/70">official rules</a>.
+            NO PURCHASE NECESSARY. 21+ US residents. Void where prohibited. See <a href="/rules" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/70">official rules</a>.
           </p>
         </div>
       </section>
@@ -878,7 +878,7 @@ export default function Home() {
         {/* ── Legal footer ── */}
         <div className="flex flex-col gap-2.5 items-center text-center px-6 py-6" style={{ background: C.warmPaper }}>
           <p className="text-[10px] leading-relaxed max-w-md" style={{ color: "#8B859C" }}>
-            NO PURCHASE NECESSARY. Open to legal US residents 21+. One entry per person; bonus entries via referral and photo upload. Ends December 31, 2026. Void where prohibited. See <a href="/rules" className="underline hover:opacity-70">official rules</a>. Please enjoy responsibly.
+            NO PURCHASE NECESSARY. Open to legal US residents 21+. One entry per person; bonus entries via referral and photo upload. Ends December 31, 2026. Void where prohibited. See <a href="/rules" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70">official rules</a>. Please enjoy responsibly.
           </p>
           <p className="font-mono text-[10px]" style={{ color: "#8B859C" }}>52&deg;44&prime;N &middot; 6&deg;52&prime;W</p>
         </div>
