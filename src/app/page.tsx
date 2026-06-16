@@ -500,9 +500,9 @@ export default function Home() {
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(43,39,64,.62) 0%, rgba(53,47,99,.08) 28%, rgba(232,158,70,.16) 54%, rgba(40,26,38,.55) 76%, rgba(20,16,30,.96) 100%)" }} />
 
           {/* Top bar: wordmark + coordinates */}
-          <div className="relative z-10 flex items-start justify-between px-5 pt-5">
-            <Image src="/assets/wordmark-white.png" alt="Flying Tumbler" width={140} height={58} className="h-14 w-auto" />
-            <div className="font-mono text-[10px] text-white/70 text-right pt-1.5 leading-relaxed">52&deg;44&prime;N<br />6&deg;52&prime;W</div>
+          <div className="relative z-10 flex items-start justify-between px-5 pt-4 lg:px-10 lg:pt-6">
+            <Image src="/assets/wordmark-stacked-pigeon-white.png" alt="Flying Tumbler Irish Whiskey" width={417} height={417} className="h-[80px] lg:h-[100px] w-auto" />
+            <div className="font-mono text-[13px] lg:text-[15px] text-white/80 text-right pt-1 leading-relaxed tracking-wider">52&deg;44&prime;N<br />6&deg;52&prime;W</div>
           </div>
 
           {/* Paddy standing + glow */}
