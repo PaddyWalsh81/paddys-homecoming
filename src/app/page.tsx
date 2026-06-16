@@ -336,9 +336,12 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  {/* Bottle hero */}
+                  {/* Bottle + tube hero */}
                   <div className="flex items-center justify-center gap-4 lg:gap-6 pt-2 pb-4">
-                    <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={80} height={200} className="h-[140px] lg:h-[180px] w-auto object-contain" />
+                    <div className="flex items-end gap-1">
+                      <Image src="/assets/bird-front.png" alt="The Bird bottle" width={60} height={150} className="h-[115px] lg:h-[155px] w-auto object-contain" />
+                      <Image src="/assets/bird-tube.png" alt="The Bird tube" width={60} height={150} className="h-[130px] lg:h-[170px] w-auto object-contain" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <h2 className="font-display text-[22px] lg:text-[28px] font-extrabold leading-tight" style={{ color: C.navy }}>Buy The Bird,<br />get free merch</h2>
                       <p className="text-[13px] lg:text-[15px] text-gray-500 mt-2 leading-relaxed">Pick up a bottle of Flying Tumbler, snap your receipt, and we&apos;ll ship you free branded merch. On us.</p>
@@ -348,12 +351,12 @@ export default function Home() {
                   {/* How it works steps */}
                   <div className="flex gap-2 lg:gap-3 mb-5">
                     {[
-                      { n: "1", label: "Buy a bottle", icon: "🥃" },
-                      { n: "2", label: "Snap receipt", icon: "📸" },
-                      { n: "3", label: "Pick your merch", icon: "🎁" },
+                      { n: "1", label: "Buy a bottle", img: "/assets/bird-front.png", alt: "The Bird bottle" },
+                      { n: "2", label: "Snap receipt", img: "/assets/stamp-ireland-countryside.png", alt: "Flying Tumbler stamp" },
+                      { n: "3", label: "Pick your merch", img: "/assets/paddy-standing.png", alt: "Paddy the Pigeon" },
                     ].map((step) => (
-                      <div key={step.n} className="flex-1 rounded-xl p-3 lg:p-4 text-center" style={{ background: C.light }}>
-                        <div className="text-lg lg:text-2xl mb-1">{step.icon}</div>
+                      <div key={step.n} className="flex-1 rounded-xl p-3 lg:p-4 text-center flex flex-col items-center" style={{ background: C.light }}>
+                        <Image src={step.img} alt={step.alt} width={48} height={48} className="h-[36px] lg:h-[44px] w-auto object-contain mb-1.5" />
                         <p className="text-[11px] lg:text-sm font-bold" style={{ color: C.navy }}>{step.label}</p>
                       </div>
                     ))}
