@@ -356,10 +356,10 @@ export default function Home() {
                       {/* State filter chips */}
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {CORE_STATES.map((st) => (
-                          <button key={st} type="button" onClick={() => { setMerchPurchaseState(merchPurchaseState === st ? "" : st); setMerchPurchaseStore(""); setMerchStoreSearch(""); }}
+                          <button key={st.code} type="button" onClick={() => { setMerchPurchaseState(merchPurchaseState === st.code ? "" : st.code); setMerchPurchaseStore(""); setMerchStoreSearch(""); }}
                             className="h-7 px-2.5 rounded-full text-[11px] font-semibold border transition-all"
-                            style={merchPurchaseState === st ? { background: C.green, color: "white", borderColor: C.green } : { background: "transparent", color: C.navy, borderColor: "#E0E0E0" }}>
-                            {st}
+                            style={merchPurchaseState === st.code ? { background: C.green, color: "white", borderColor: C.green } : { background: "transparent", color: C.navy, borderColor: "#E0E0E0" }}>
+                            {st.code}
                           </button>
                         ))}
                         {OTHER_STATES.length > 0 && (
