@@ -530,15 +530,19 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bottle on right side — desktop only */}
-          <div className="hidden lg:block absolute right-[6%] bottom-[12%] z-20 pointer-events-none">
-            <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={220} height={440} className="h-[320px] w-auto drop-shadow-2xl" style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,.45))" }} />
+          {/* Bottle + tube on right side — desktop only */}
+          <div className="hidden lg:block absolute right-[3%] bottom-[10%] z-20 pointer-events-none">
+            <div className="flex items-end gap-2">
+              <Image src="/assets/bird-front.png" alt="The Bird — Flying Tumbler Irish Whiskey bottle" width={150} height={300} className="h-[280px] w-auto" style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,.45))" }} />
+              <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey tube" width={150} height={300} className="h-[300px] w-auto" style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,.45))" }} />
+            </div>
           </div>
         </div>
 
-        {/* Bottle — mobile only, bridging hero and form */}
-        <div className="lg:hidden flex justify-center -mt-2 relative z-10" style={{ background: C.deepDark }}>
-          <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey" width={140} height={280} className="h-[140px] w-auto" style={{ filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }} />
+        {/* Bottle + tube — mobile only, bridging hero and form */}
+        <div className="lg:hidden flex justify-center items-end gap-1.5 -mt-2 relative z-10" style={{ background: C.deepDark }}>
+          <Image src="/assets/bird-front.png" alt="The Bird — Flying Tumbler Irish Whiskey bottle" width={80} height={160} className="h-[120px] w-auto" style={{ filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }} />
+          <Image src="/assets/bird-tube.png" alt="The Bird — Flying Tumbler Irish Whiskey tube" width={80} height={160} className="h-[130px] w-auto" style={{ filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }} />
         </div>
 
         {/* ── Form zone ── */}
